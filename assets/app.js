@@ -19,6 +19,16 @@ const SYSTEMS = {
       ['gbajs project page', 'https://github.com/endrift/gbajs'],
     ],
   },
+  psx: {
+    title: 'PlayStation 1 browser player',
+    blurb: 'Upload a legal PS1 image you own. PS1 is realistic in this free browser setup, but a proper BIOS helps compatibility a lot.',
+    caveat: 'PS1 note: common BIOS files are often needed for best compatibility, and this site does not bundle any BIOS files.',
+    links: [
+      ['EmulatorJS PlayStation docs', 'https://emulatorjs.org/docs/systems/playstation/'],
+      ['PlayStation homebrew and dev resources', 'https://www.psxdev.net/'],
+      ['Retro homebrew resources on itch.io', 'https://itch.io/games/tag-playstation'],
+    ],
+  },
 };
 
 const params = new URLSearchParams(window.location.search);

@@ -54,6 +54,7 @@ h1, h2 { margin: 0 0 12px; }
   margin-top: 18px;
 }
 .two-up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .player-grid { grid-template-columns: 340px minmax(0, 1fr); align-items: start; }
 
 .button-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
@@ -130,6 +131,10 @@ input[type="file"] {
   margin: 0;
 }
 .links li + li { margin-top: 10px; }
+
+@media (max-width: 980px) {
+  .three-up { grid-template-columns: 1fr; }
+}
 
 @media (max-width: 860px) {
   .two-up, .player-grid { grid-template-columns: 1fr; }
