@@ -1,0 +1,13 @@
+{
+  "gb": [
+    {
+      "title": "Castlevania: Circle of the Moon GBC 2.0",
+      "file": "games/gb/CotM_GBC_2_0.gb",
+      "notes": "User-provided GB/GBC-compatible fan/homebrew-style build. Browser launch version uses the .gb file; the .pocket build is not used here."
+    }
+  ],
+  "gba": [],
+  "nds": [],
+  "n64": [],
+  "psx": []
+}

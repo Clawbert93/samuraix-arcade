@@ -1,4 +1,16 @@
 const SYSTEMS = {
+  gb: {
+    title: 'Game Boy / Game Boy Color browser player',
+    blurb: 'Upload a legal .gb or .gbc file, or pick a curated GB/GBC game from the dropdown. This is a very clean fit for the free browser stack.',
+    caveat: 'GB/GBC note: this uses the Game Boy core and works with both classic Game Boy and Game Boy Color compatible ROMs.',
+    links: [
+      ['EmulatorJS Nintendo Game Boy docs', 'https://emulatorjs.org/docs/systems/nintendo-game-boy/'],
+      ['Game Boy homebrew on itch.io', 'https://itch.io/games/tag-game-boy'],
+      ['Game Boy Color homebrew on itch.io', 'https://itch.io/games/tag-game-boy-color'],
+      ['GameBrew GB/GBC homebrew list', 'https://www.gamebrew.org/wiki/List_of_GB_homebrew_applications'],
+    ],
+    accept: '.gb,.gbc,.zip,.7z',
+  },
   nds: {
     title: 'Nintendo DS browser player',
     blurb: 'Upload a legal .nds file or homebrew build. This is the zero-cost version, so compatibility is good-not-perfect and some titles may still want extra BIOS or firmware help.',
@@ -8,41 +20,45 @@ const SYSTEMS = {
       ['DS-Homebrew wiki', 'https://wiki.ds-homebrew.com/'],
       ['GameBrew Nintendo DS homebrew list', 'https://www.gamebrew.org/wiki/List_of_DS_homebrew_applications'],
     ],
+    accept: '.nds,.zip,.7z',
   },
   gba: {
     title: 'Game Boy Advance browser player',
-    blurb: 'Upload a legal .gba file or homebrew build. GBA is usually the smoother, simpler option in-browser.',
+    blurb: 'Upload a legal .gba file or homebrew build, or use the dropdown when curated games are added.',
     caveat: 'GBA note: saves stay in this browser only unless we later add a backend.',
     links: [
       ['GBA homebrew on itch.io', 'https://itch.io/games/tag-gameboy-advance'],
       ['GameBrew GBA homebrew list', 'https://www.gamebrew.org/wiki/List_of_GBA_homebrew_applications'],
       ['gbajs project page', 'https://github.com/endrift/gbajs'],
     ],
+    accept: '.gba,.zip,.7z',
   },
   n64: {
     title: 'Nintendo 64 browser player',
-    blurb: 'Upload a legal N64 ROM you own. N64 fits this free browser setup pretty nicely for casual play.',
+    blurb: 'Upload a legal N64 ROM you own, or use the dropdown once curated games are added. N64 fits this free browser setup pretty nicely for casual play.',
     caveat: 'N64 note: compatibility varies by game and browser, but this is one of the more realistic higher-end additions in the free stack.',
     links: [
       ['EmulatorJS Nintendo 64 docs', 'https://emulatorjs.org/docs/systems/nintendo-64/'],
       ['n64js project', 'https://github.com/hulkholden/n64js'],
       ['Retro browser emulation overview', 'https://emulation.gametechwiki.com/index.php/Emulators_on_browsers'],
     ],
+    accept: '.z64,.n64,.v64,.zip,.7z',
   },
   psx: {
     title: 'PlayStation 1 browser player',
-    blurb: 'Upload a legal PS1 image you own. PS1 is realistic in this free browser setup, but a proper BIOS helps compatibility a lot.',
+    blurb: 'Upload a legal PS1 image you own, or use the dropdown once curated games are added. PS1 is realistic in this free browser setup, but a proper BIOS helps compatibility a lot.',
     caveat: 'PS1 note: common BIOS files are often needed for best compatibility, and this site does not bundle any BIOS files.',
     links: [
       ['EmulatorJS PlayStation docs', 'https://emulatorjs.org/docs/systems/playstation/'],
       ['PlayStation homebrew and dev resources', 'https://www.psxdev.net/'],
       ['Retro homebrew resources on itch.io', 'https://itch.io/games/tag-playstation'],
     ],
+    accept: '.cue,.bin,.img,.mdf,.pbp,.chd,.zip,.7z',
   },
 };
 
 const params = new URLSearchParams(window.location.search);
-const core = SYSTEMS[params.get('core')] ? params.get('core') : 'nds';
+const core = SYSTEMS[params.get('core')] ? params.get('core') : 'gb';
 const config = SYSTEMS[core];
 
 const titleEl = document.getElementById('systemTitle');
@@ -50,6 +66,9 @@ const blurbEl = document.getElementById('systemBlurb');
 const caveatEl = document.getElementById('systemCaveat');
 const linksEl = document.getElementById('legalLinks');
 const inputEl = document.getElementById('romInput');
+const dropdownEl = document.getElementById('gameSelect');
+const dropdownWrapEl = document.getElementById('gameSelectWrap');
+const dropdownNotesEl = document.getElementById('gameNotes');
 const buttonEl = document.getElementById('launchButton');
 const statusEl = document.getElementById('launchStatus');
 const frameEl = document.getElementById('gameFrame');
@@ -57,6 +76,7 @@ const frameEl = document.getElementById('gameFrame');
 if (titleEl) titleEl.textContent = config.title;
 if (blurbEl) blurbEl.textContent = config.blurb;
 if (caveatEl) caveatEl.textContent = config.caveat;
+if (inputEl) inputEl.setAttribute('accept', config.accept);
 if (linksEl) {
   config.links.forEach(([label, href]) => {
     const li = document.createElement('li');
@@ -71,6 +91,8 @@ if (linksEl) {
 }
 
 let selectedFile = null;
+let selectedGame = null;
+let library = {};
 let objectUrl = null;
 let launched = false;
 
@@ -78,30 +100,118 @@ function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
 
+function syncLaunchState() {
+  if (!buttonEl) return;
+  buttonEl.disabled = !(selectedFile || selectedGame) || launched;
+}
+
+function populateDropdown() {
+  if (!dropdownEl) return;
+  const entries = Array.isArray(library[core]) ? library[core] : [];
+  dropdownEl.innerHTML = '';
+
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = entries.length ? 'Choose a curated game…' : 'No curated games added yet';
+  dropdownEl.appendChild(placeholder);
+  dropdownEl.disabled = !entries.length;
+
+  if (dropdownWrapEl) {
+    dropdownWrapEl.hidden = false;
+  }
+
+  entries.forEach((entry, index) => {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = entry.title;
+    dropdownEl.appendChild(option);
+  });
+
+  if (dropdownNotesEl) {
+    dropdownNotesEl.textContent = entries.length
+      ? 'Pick from the curated list, or ignore it and upload your own file below.'
+      : 'No curated games for this emulator yet. Once you send me more files, I can add them here.';
+  }
+}
+
+async function loadLibrary() {
+  try {
+    const response = await fetch('data/game-library.json?v=1', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    library = await response.json();
+  } catch (error) {
+    library = {};
+    if (dropdownNotesEl) {
+      dropdownNotesEl.textContent = 'Could not load the curated game list just now, but manual uploads still work.';
+    }
+  }
+  populateDropdown();
+}
+
 inputEl?.addEventListener('change', () => {
   selectedFile = inputEl.files && inputEl.files[0] ? inputEl.files[0] : null;
-  buttonEl.disabled = !selectedFile;
   if (selectedFile) {
-    setStatus(`Ready to launch ${selectedFile.name}`);
+    selectedGame = null;
+    if (dropdownEl) dropdownEl.value = '';
+    setStatus(`Ready to launch uploaded file: ${selectedFile.name}`);
+  } else if (selectedGame) {
+    setStatus(`Ready to launch curated game: ${selectedGame.title}`);
   } else {
-    setStatus('Choose a ROM file to start.');
+    setStatus('Choose a curated game or upload a file to start.');
   }
+  syncLaunchState();
+});
+
+dropdownEl?.addEventListener('change', () => {
+  const entries = Array.isArray(library[core]) ? library[core] : [];
+  const chosen = dropdownEl.value === '' ? null : entries[Number(dropdownEl.value)] || null;
+  selectedGame = chosen;
+  if (selectedGame) {
+    selectedFile = null;
+    if (inputEl) inputEl.value = '';
+    setStatus(`Ready to launch curated game: ${selectedGame.title}`);
+    if (dropdownNotesEl) {
+      dropdownNotesEl.textContent = selectedGame.notes || 'Curated game selected.';
+    }
+  } else if (selectedFile) {
+    setStatus(`Ready to launch uploaded file: ${selectedFile.name}`);
+  } else {
+    const entriesExist = entries.length > 0;
+    setStatus(entriesExist ? 'Choose a curated game or upload a file to start.' : 'Upload a file to start.');
+    if (dropdownNotesEl) {
+      dropdownNotesEl.textContent = entriesExist
+        ? 'Pick from the curated list, or ignore it and upload your own file below.'
+        : 'No curated games for this emulator yet. Once you send me more files, I can add them here.';
+    }
+  }
+  syncLaunchState();
 });
 
 buttonEl?.addEventListener('click', () => {
-  if (!selectedFile || launched) return;
+  if ((!selectedFile && !selectedGame) || launched) return;
   launched = true;
   buttonEl.disabled = true;
-  inputEl.disabled = true;
-  objectUrl = URL.createObjectURL(selectedFile);
+  if (inputEl) inputEl.disabled = true;
+  if (dropdownEl) dropdownEl.disabled = true;
+
+  let gameUrl = '';
+  let gameName = '';
+  if (selectedFile) {
+    objectUrl = URL.createObjectURL(selectedFile);
+    gameUrl = objectUrl;
+    gameName = selectedFile.name.replace(/\.[^.]+$/, '');
+  } else if (selectedGame) {
+    gameUrl = selectedGame.file;
+    gameName = selectedGame.title;
+  }
 
   frameEl.classList.remove('empty');
   frameEl.innerHTML = '<div id="game"></div>';
 
   window.EJS_player = '#game';
   window.EJS_core = core;
-  window.EJS_gameUrl = objectUrl;
-  window.EJS_gameName = selectedFile.name.replace(/\.[^.]+$/, '');
+  window.EJS_gameUrl = gameUrl;
+  window.EJS_gameName = gameName;
   window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.8;
@@ -116,7 +226,12 @@ buttonEl?.addEventListener('click', () => {
   script.async = true;
   document.body.appendChild(script);
 
-  setStatus('Loading emulator… first launch can take a little longer while the browser caches core files.');
+  setStatus(`Loading ${gameName}… first launch can take a little longer while the browser caches core files.`);
+});
+
+loadLibrary().then(() => {
+  setStatus('Choose a curated game or upload a file to start.');
+  syncLaunchState();
 });
 
 window.addEventListener('beforeunload', () => {

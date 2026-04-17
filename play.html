@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SamuraiX Arcade Player</title>
-  <meta name="description" content="Browser-based Nintendo DS and GBA player for SamuraiX community use.">
+  <meta name="description" content="Browser-based retro arcade player for the SamuraiX community.">
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
@@ -15,6 +15,7 @@
       <p id="systemBlurb" class="lede"></p>
       <div class="button-row">
         <a class="button" href="index.html">Back to arcade</a>
+        <a class="button" href="play.html?core=gb">GB/GBC</a>
         <a class="button" href="play.html?core=nds">DS</a>
         <a class="button" href="play.html?core=gba">GBA</a>
         <a class="button" href="play.html?core=n64">N64</a>
@@ -25,12 +26,19 @@
     <section class="grid player-grid">
       <article class="card controls-card">
         <h2>Launch a game</h2>
+
+        <label class="field" id="gameSelectWrap">
+          <span>Curated game list</span>
+          <select id="gameSelect"></select>
+        </label>
+        <p class="subtle" id="gameNotes"></p>
+
         <label class="field">
-          <span>Upload a legal ROM or homebrew file</span>
-          <input id="romInput" type="file" accept=".nds,.gba,.z64,.n64,.v64,.cue,.bin,.img,.mdf,.pbp,.chd,.zip,.7z">
+          <span>Or upload a legal ROM or homebrew file</span>
+          <input id="romInput" type="file" accept=".gb,.gbc,.nds,.gba,.z64,.n64,.v64,.cue,.bin,.img,.mdf,.pbp,.chd,.zip,.7z">
         </label>
         <button id="launchButton" class="button primary" type="button" disabled>Launch</button>
-        <p class="subtle" id="launchStatus">Choose a ROM file to start.</p>
+        <p class="subtle" id="launchStatus">Choose a curated game or upload a file to start.</p>
 
         <div class="note-box">
           <strong>Saves:</strong> This free build keeps saves on this browser and device only.
@@ -42,7 +50,7 @@
         <div id="gameFrame" class="game-frame empty">
           <div class="placeholder">
             <h2>Ready when you are</h2>
-            <p>Upload a file, hit launch, and the emulator will load here.</p>
+            <p>Pick a game from the dropdown or upload a file, then launch it here.</p>
           </div>
         </div>
       </article>
@@ -56,7 +64,7 @@
       <article class="card">
         <h2>Heads up</h2>
         <ul class="links">
-          <li>No ROMs are hosted here.</li>
+          <li>No ROMs are hosted here unless you explicitly gave them to me to add.</li>
           <li>Use games or homebrew you are legally allowed to play.</li>
           <li>If you eventually want account-linked cloud saves, we will need a backend and probably some recurring cost.</li>
         </ul>
