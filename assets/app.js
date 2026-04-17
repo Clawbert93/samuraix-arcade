@@ -19,6 +19,16 @@ const SYSTEMS = {
       ['gbajs project page', 'https://github.com/endrift/gbajs'],
     ],
   },
+  n64: {
+    title: 'Nintendo 64 browser player',
+    blurb: 'Upload a legal N64 ROM you own. N64 fits this free browser setup pretty nicely for casual play.',
+    caveat: 'N64 note: compatibility varies by game and browser, but this is one of the more realistic higher-end additions in the free stack.',
+    links: [
+      ['EmulatorJS Nintendo 64 docs', 'https://emulatorjs.org/docs/systems/nintendo-64/'],
+      ['n64js project', 'https://github.com/hulkholden/n64js'],
+      ['Retro browser emulation overview', 'https://emulation.gametechwiki.com/index.php/Emulators_on_browsers'],
+    ],
+  },
   psx: {
     title: 'PlayStation 1 browser player',
     blurb: 'Upload a legal PS1 image you own. PS1 is realistic in this free browser setup, but a proper BIOS helps compatibility a lot.',
