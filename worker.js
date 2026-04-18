@@ -55,6 +55,16 @@ export default {
       return proxyCloudAsset(request, env);
     }
 
+    if (url.pathname === '/') {
+      const rewritten = new URL('/activity', url);
+      return env.ASSETS.fetch(new Request(rewritten, request));
+    }
+
+    if (url.pathname === '/arcade') {
+      const rewritten = new URL('/index.html', url);
+      return env.ASSETS.fetch(new Request(rewritten, request));
+    }
+
     return env.ASSETS.fetch(request);
   },
 };
