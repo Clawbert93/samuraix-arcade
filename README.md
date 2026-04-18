@@ -86,6 +86,19 @@ Cloudflare R2 setup notes for this project:
 - `R2_SETUP.md`
 - `data/r2-cors.arcade-example.json`
 
+## Cloudflare Pages deploy settings
+
+Because the repo still contains some local game files that are too large for Cloudflare Pages asset limits, deploy Pages from the generated bundle instead of the raw repo root.
+
+Use these settings:
+
+- Framework preset: `None`
+- Build command: `python3 scripts/build_cloudflare_pages_bundle.py`
+- Build output directory: `dist`
+- Root directory: leave blank
+
+The build script copies the site shell, cover art, headers, and only the local game files that fit Cloudflare's static asset limit. Bigger titles should stay on external hosting like R2.
+
 ## Important caveats
 
 - Use only legal ROMs or homebrew you are allowed to play
