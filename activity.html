@@ -4,26 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SamuraiX Arcade Activity</title>
-  <meta name="description" content="Discord Activity shell for the SamuraiX Arcade.">
-  <link rel="stylesheet" href="assets/styles.css">
+  <meta name="description" content="Minimal Discord Activity launcher for the SamuraiX Arcade.">
+  <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body class="activity-body">
   <main class="shell activity-shell">
     <section class="card hero compact activity-hero">
       <p class="eyebrow">🎮 Discord Activity</p>
       <h1>SamuraiX Arcade Party Room</h1>
-      <p class="lede" id="activityStatus">Loading the in-Discord game hub. If this page opens outside Discord, it still works as a clean browser preview.</p>
-      <div class="button-row" id="activityHeroActions">
+      <p class="lede" id="activityStatus">Starting the minimal Discord Activity shell.</p>
+      <div class="button-row">
         <a class="button primary" href="/play?core=psx&embedded=1&activity=1">Open PS1 shelf</a>
-        <a class="button" href="/play?core=nds&embedded=1&activity=1">Open DS shelf</a>
         <a class="button" href="/play?core=gba&embedded=1&activity=1">Open GBA shelf</a>
+        <a class="button" href="/play?core=gb&embedded=1&activity=1">Open GB/GBC shelf</a>
         <a class="button" href="/arcade">Main arcade</a>
       </div>
     </section>
 
     <section class="grid activity-grid">
       <article class="card">
-        <h2>Room state</h2>
+        <h2>Activity health</h2>
         <div class="note-box">
           <strong>Discord detected:</strong> <span id="discordDetected">Checking…</span>
         </div>
@@ -31,65 +31,16 @@
           <strong>SDK auth:</strong> <span id="discordAuthState">Waiting…</span>
         </div>
         <div class="note-box">
-          <strong>Live shelf count:</strong> <span id="libraryStats">Loading curated systems and games…</span>
-        </div>
-        <div class="note-box">
-          <strong>In-Discord lane:</strong> GB/GBC, SNES, GBA, N64, and PS1 are the cleanest Activity fits. DS stays visible, but touch-heavy games are still better on desktop with a mouse.
-        </div>
-        <div class="note-box warning-box">
-          <strong>PSP policy:</strong> PSP stays browser-first. It is still janky enough that the Activity hub should steer people to the browser instead of pretending Discord is the best place to run it.
+          <strong>Mode:</strong> Minimal debug launcher. No dynamic library rendering, no big content fetches.
         </div>
       </article>
 
       <article class="card">
-        <h2>Featured launch lane</h2>
-        <div class="activity-launch-list" id="featuredLaunches">
-          <p class="subtle">Loading featured games…</p>
-        </div>
-      </article>
-    </section>
-
-    <section class="card activity-section">
-      <div class="activity-section-head">
-        <div>
-          <p class="eyebrow">🕹️ Shelves</p>
-          <h2>Pick a system inside Discord</h2>
-        </div>
-        <p class="subtle">Each shelf opens the embedded player with the curated dropdown ready. PSP is split out below as browser-first.</p>
-      </div>
-      <div class="activity-system-grid" id="systemShelfGrid">
-        <p class="subtle">Loading system shelves…</p>
-      </div>
-    </section>
-
-    <section class="grid activity-grid">
-      <article class="card activity-section">
-        <div class="activity-section-head">
-          <div>
-            <p class="eyebrow">✨ Quick picks</p>
-            <h2>Best bets for Activity mode</h2>
-          </div>
-          <p class="subtle">These are the lighter or cleaner launches to start with in the Discord room.</p>
-        </div>
-        <div class="activity-game-grid" id="activityBestBets">
-          <p class="subtle">Loading best bets…</p>
-        </div>
-      </article>
-
-      <article class="card activity-section">
-        <div class="activity-section-head">
-          <div>
-            <p class="eyebrow">🌐 Browser-first</p>
-            <h2>Heavy lane and escape hatches</h2>
-          </div>
-          <p class="subtle">Use these when someone wants the big stuff or when Discord's webview starts feeling cramped.</p>
-        </div>
-        <div class="activity-game-grid" id="browserFirstLane">
-          <p class="subtle">Loading browser-first picks…</p>
-        </div>
+        <h2>What this test proves</h2>
+        <p class="subtle">If this tiny shell stays open, then the earlier crashes came from our Activity page logic or rendering load. If this still gets kicked out after a few seconds, the problem is higher-level Discord Activity config or session plumbing.</p>
       </article>
     </section>
   </main>
-  <script type="module" src="assets/activity.js"></script>
+  <script type="module" src="/assets/activity.js"></script>
 </body>
 </html>
