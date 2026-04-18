@@ -77,6 +77,15 @@ Helper script for switching a curated entry over to external hosting:
 
 - `scripts/arcade_set_external_url.py`
 
+Bulk helper for applying the staged external-hosting manifest once a public bucket URL exists:
+
+- `scripts/arcade_apply_pending_external.py`
+
+Cloudflare R2 setup notes for this project:
+
+- `R2_SETUP.md`
+- `data/r2-cors.arcade-example.json`
+
 ## Important caveats
 
 - Use only legal ROMs or homebrew you are allowed to play
