@@ -114,6 +114,11 @@ const frameEl = document.getElementById('gameFrame');
 const embeddedWarningEl = document.getElementById('embeddedWarning');
 const pspRuntimeInfoEl = document.getElementById('pspRuntimeInfo');
 
+if (frameEl) {
+  frameEl.tabIndex = 0;
+  frameEl.setAttribute('role', 'application');
+}
+
 if (titleEl) titleEl.textContent = config.title;
 if (blurbEl) blurbEl.textContent = config.blurb;
 if (caveatEl) caveatEl.textContent = config.caveat;
@@ -169,16 +174,16 @@ const PSP_PRESETS = {
   },
   'max-performance': {
     label: 'max performance',
-    note: 'Most aggressive browser preset. Lower visual quality, more frameskip, and riskier speed hacks for the best shot at playable PSP.',
+    note: 'Most aggressive browser preset. Lower visual quality, heavier frameskip, and extra hacks for the best shot at barely-playable PSP.',
     options: {
       ejs_threads: 'enabled',
       webgl2Enabled: 'enabled',
       ppsspp_internal_resolution: '480x272',
-      ppsspp_frameskip: '2',
+      ppsspp_frameskip: '4',
       ppsspp_auto_frameskip: 'enabled',
       ppsspp_frame_duplication: 'disabled',
       ppsspp_gpu_hardware_transform: 'enabled',
-      ppsspp_software_skinning: 'enabled',
+      ppsspp_software_skinning: 'disabled',
       ppsspp_hardware_tesselation: 'disabled',
       ppsspp_texture_scaling_level: 'disabled',
       ppsspp_texture_deposterize: 'disabled',
@@ -234,6 +239,107 @@ function isExternalUrl(value) {
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
+}
+
+function isEditableElement(node) {
+  if (!(node instanceof HTMLElement)) return false;
+  return node.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(node.tagName);
+}
+
+function getFocusableGameTarget() {
+  if (!frameEl) return null;
+  return frameEl.querySelector('canvas, iframe, [tabindex], .emulator-container') || frameEl;
+}
+
+function focusGameTarget() {
+  const target = getFocusableGameTarget();
+  if (!(target instanceof HTMLElement)) return;
+  if (!target.hasAttribute('tabindex')) target.tabIndex = 0;
+  try {
+    target.focus({ preventScroll: true });
+  } catch (error) {
+    try {
+      target.focus();
+    } catch (innerError) {}
+  }
+}
+
+function installKeyboardFocusBridge() {
+  if (!frameEl) return;
+  const focusIfGameEvent = (event) => {
+    if (!launched) return;
+    if (!(event.target instanceof Node) || !frameEl.contains(event.target)) return;
+    focusGameTarget();
+  };
+  frameEl.addEventListener('pointerdown', focusIfGameEvent, { passive: true });
+  frameEl.addEventListener('mousedown', focusIfGameEvent, { passive: true });
+  frameEl.addEventListener('touchstart', focusIfGameEvent, { passive: true });
+
+  window.addEventListener('keydown', (event) => {
+    if (!launched) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (isEditableElement(document.activeElement)) return;
+    focusGameTarget();
+  });
+}
+
+function installNdsTouchBridge() {
+  if (!frameEl || core !== 'nds') return;
+
+  const relayTouchAsMouse = (target) => {
+    if (!(target instanceof HTMLElement) || target.dataset.ndsTouchBridgeInstalled === '1') return;
+    target.dataset.ndsTouchBridgeInstalled = '1';
+    target.style.touchAction = 'none';
+
+    const dispatchMouse = (type, touch) => {
+      const pointTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+      const eventTarget = frameEl.contains(pointTarget) ? pointTarget : target;
+      eventTarget.dispatchEvent(new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        screenX: touch.screenX,
+        screenY: touch.screenY,
+        button: 0,
+        buttons: type === 'mouseup' ? 0 : 1,
+      }));
+    };
+
+    target.addEventListener('touchstart', (event) => {
+      const touch = event.changedTouches?.[0];
+      if (!touch) return;
+      dispatchMouse('mousemove', touch);
+      dispatchMouse('mousedown', touch);
+      event.preventDefault();
+    }, { passive: false });
+
+    target.addEventListener('touchmove', (event) => {
+      const touch = event.changedTouches?.[0];
+      if (!touch) return;
+      dispatchMouse('mousemove', touch);
+      event.preventDefault();
+    }, { passive: false });
+
+    const endTouch = (event) => {
+      const touch = event.changedTouches?.[0];
+      if (!touch) return;
+      dispatchMouse('mouseup', touch);
+      dispatchMouse('click', touch);
+      event.preventDefault();
+    };
+
+    target.addEventListener('touchend', endTouch, { passive: false });
+    target.addEventListener('touchcancel', endTouch, { passive: false });
+  };
+
+  const attachBridge = () => {
+    relayTouchAsMouse(frameEl.querySelector('canvas') || frameEl.querySelector('#game'));
+  };
+
+  attachBridge();
+  const observer = new MutationObserver(attachBridge);
+  observer.observe(frameEl, { childList: true, subtree: true });
 }
 
 function getPspPresetKey() {
@@ -530,6 +636,12 @@ buttonEl?.addEventListener('click', () => {
   script.src = `${emulatorDataBase}loader.js`;
   script.crossOrigin = 'anonymous';
   script.async = true;
+  script.addEventListener('load', () => {
+    window.setTimeout(focusGameTarget, 150);
+    window.setTimeout(focusGameTarget, 900);
+    window.setTimeout(focusGameTarget, 1800);
+    installNdsTouchBridge();
+  });
   document.body.appendChild(script);
 
   const sourceLabel = isExternalUrl(gameUrl) ? ' from cloud storage' : '';
@@ -571,6 +683,7 @@ pspPresetEl?.addEventListener('change', () => {
   }
 });
 
+installKeyboardFocusBridge();
 syncPspPresetUi();
 syncEmbeddedWarnings();
 

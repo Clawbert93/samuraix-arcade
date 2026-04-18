@@ -135,6 +135,7 @@ select option {
   border: 1px solid #21412f;
   background: #030705;
   overflow: hidden;
+  touch-action: none;
 }
 .game-frame.is-fullscreen {
   width: 100vw;
@@ -155,6 +156,12 @@ select option {
 #game {
   width: 100%;
   min-height: 720px;
+  touch-action: none;
+}
+
+#game canvas,
+#game iframe {
+  touch-action: none;
 }
 .game-frame.is-fullscreen #game {
   min-height: 100vh;
