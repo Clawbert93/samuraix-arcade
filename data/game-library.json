@@ -320,61 +320,61 @@
       "title": "Crisis Core: Final Fantasy VII",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Crisis_Core_Final_Fantasy_VII_USA_READNFO_PSP-Googlecus.rar",
       "webTier": "not-recommended",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie to R2. Heavy action RPG, so treat it as browser-first at best and generally not recommended for normal web play."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie to R2. The current RAR payload does not contain a launchable ISO/CSO/PBP game image, so browser launch is intentionally blocked until a real game dump replaces it."
     },
     {
       "title": "Final Fantasy Tactics: The War of the Lions",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Final_Fantasy_Tactics_The_War_Of_The_Lions_USA_PSP-pSyPSP.rar",
-      "webTier": "experimental",
-      "notes": "PSP asset uploaded by Robbie in the Discord games channel, then mirrored into R2. Turn-based tactics makes this a more realistic experimental web candidate than the heaviest action PSP games."
+      "webTier": "not-recommended",
+      "notes": "PSP asset uploaded by Robbie in the Discord games channel, then mirrored into R2. The current RAR payload is not a clean standalone game image for browser launch, so it stays blocked until replaced with a valid ISO, CSO, PBP, or 7z package."
     },
     {
       "title": "Grand Theft Auto: Liberty City Stories",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Liberty_City_Stories.7z",
       "webTier": "browser-first",
-      "notes": "Large externally hosted asset. Source upload: Grand_Theft_Auto_-_Liberty_City_Stories_USA_EnFrDeEsIt_v3.00.7z. Heavy 3D PSP title, so treat web play as browser-first and experimental. .cso if clean conversion is available, otherwise keep archive"
+      "notes": "Large externally hosted asset. Source upload: Grand_Theft_Auto_-_Liberty_City_Stories_USA_EnFrDeEsIt_v3.00.7z. The existing 7z payload is already smaller than a clean CSO conversion, so it stays as 7z for web delivery."
     },
     {
       "title": "Assassin's Creed: Bloodlines",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Assassins_Creed_Bloodlines.zip",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Assassins_Creed_Bloodlines.7z",
       "webTier": "browser-first",
-      "notes": "Large externally hosted asset. Source upload: Assassins_Creed__Bloodlines.zip. Heavy 3D PSP title, so treat web play as browser-first and experimental. .cso if clean conversion is available, otherwise keep archive"
+      "notes": "Large externally hosted asset. Source upload: Assassins_Creed__Bloodlines.zip. The original upload was already a 7z archive under a .zip name, so it was normalized to a real .7z URL instead of using a larger CSO conversion."
     },
     {
       "title": "Dante's Inferno",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Dantes_Inferno.zip",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Dantes_Inferno.7z",
       "webTier": "not-recommended",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. Demanding action title, not recommended for normal web play except as an experiment."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The original upload was already a 7z archive under a .zip name, and that 7z stays smaller than a clean CSO conversion, so it now uses a proper .7z URL."
     },
     {
       "title": "God of War: Chains of Olympus",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/God_of_War_Chains_of_Olympus.7z",
       "webTier": "not-recommended",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. One of the heaviest titles here, not recommended for normal web play."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The existing 7z payload is already smaller than a clean CSO conversion, so it stays as 7z for web delivery."
     },
     {
       "title": "Grand Theft Auto: Vice City Stories",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Vice_City_Stories.zip",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Vice_City_Stories.7z",
       "webTier": "browser-first",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. Heavy open-world PSP title, so keep this browser-first and experimental on the web."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The original upload was already a 7z archive under a .zip name, so it was normalized to a proper .7z URL instead of using a larger CSO conversion."
     },
     {
       "title": "Naruto Shippuden: Ultimate Ninja Impact",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Impact.7z",
       "webTier": "experimental",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. Experimental for web play, may be acceptable on stronger desktop browsers."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The existing 7z payload is already smaller than a clean CSO conversion, so it stays as 7z for web delivery."
     },
     {
       "title": "Naruto Shippuden: Ultimate Ninja Heroes 3",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Heroes_3.zip",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Heroes_3.7z",
       "webTier": "experimental",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. Experimental for web play, but more realistic than the heaviest PSP titles here."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The original upload was already a 7z archive under a .zip name, so it now uses a proper .7z URL instead of a mislabeled .zip."
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Kingdom_Hearts_Birth_by_Sleep_Final_Mix_English_Patched.cso",
       "webTier": "not-recommended",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. User-reported as the already-patched English build. Now swapped to a .cso build to cut download size by about 392 MB, but it is still a heavy action RPG and not recommended for normal web play."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. User-reported as the already-patched English build. This one stays on CSO because that format cut download size substantially compared with the original package."
     }
   ]
 }
