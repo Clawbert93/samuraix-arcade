@@ -366,9 +366,9 @@
     },
     {
       "title": "Naruto Shippuden: Ultimate Ninja Heroes 3",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Heroes_3.7z",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Heroes_3.cso",
       "webTier": "experimental",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. The original upload was already a 7z archive under a .zip name, so it now uses a proper .7z URL instead of a mislabeled .zip."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. Switched to a direct CSO web payload to avoid archive extraction overhead and give this title one better shot at launching in-browser."
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",

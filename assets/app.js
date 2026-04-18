@@ -256,6 +256,9 @@ function focusGameTarget() {
   if (!(target instanceof HTMLElement)) return;
   if (!target.hasAttribute('tabindex')) target.tabIndex = 0;
   try {
+    window.focus();
+  } catch (error) {}
+  try {
     target.focus({ preventScroll: true });
   } catch (error) {
     try {
@@ -284,62 +287,72 @@ function installKeyboardFocusBridge() {
 }
 
 function installNdsTouchBridge() {
-  if (!frameEl || core !== 'nds') return;
+  if (!frameEl || core !== 'nds' || frameEl.dataset.ndsTouchBridgeInstalled === '1') return;
+  frameEl.dataset.ndsTouchBridgeInstalled = '1';
+  frameEl.style.touchAction = 'none';
 
-  const relayTouchAsMouse = (target) => {
-    if (!(target instanceof HTMLElement) || target.dataset.ndsTouchBridgeInstalled === '1') return;
-    target.dataset.ndsTouchBridgeInstalled = '1';
-    target.style.touchAction = 'none';
+  const dispatchPointerLikeEvents = (type, touch) => {
+    const canvasTarget = frameEl.querySelector('canvas') || frameEl.querySelector('#game');
+    const pointTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+    const targets = [pointTarget, canvasTarget, frameEl].filter((value, index, array) => value instanceof EventTarget && array.indexOf(value) === index);
+    const buttons = type === 'pointerup' || type === 'mouseup' || type === 'click' ? 0 : 1;
 
-    const dispatchMouse = (type, touch) => {
-      const pointTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-      const eventTarget = frameEl.contains(pointTarget) ? pointTarget : target;
-      eventTarget.dispatchEvent(new MouseEvent(type, {
-        bubbles: true,
-        cancelable: true,
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        screenX: touch.screenX,
-        screenY: touch.screenY,
-        button: 0,
-        buttons: type === 'mouseup' ? 0 : 1,
-      }));
-    };
-
-    target.addEventListener('touchstart', (event) => {
-      const touch = event.changedTouches?.[0];
-      if (!touch) return;
-      dispatchMouse('mousemove', touch);
-      dispatchMouse('mousedown', touch);
-      event.preventDefault();
-    }, { passive: false });
-
-    target.addEventListener('touchmove', (event) => {
-      const touch = event.changedTouches?.[0];
-      if (!touch) return;
-      dispatchMouse('mousemove', touch);
-      event.preventDefault();
-    }, { passive: false });
-
-    const endTouch = (event) => {
-      const touch = event.changedTouches?.[0];
-      if (!touch) return;
-      dispatchMouse('mouseup', touch);
-      dispatchMouse('click', touch);
-      event.preventDefault();
-    };
-
-    target.addEventListener('touchend', endTouch, { passive: false });
-    target.addEventListener('touchcancel', endTouch, { passive: false });
+    for (const target of targets) {
+      if (typeof PointerEvent === 'function' && type.startsWith('pointer')) {
+        target.dispatchEvent(new PointerEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          screenX: touch.screenX,
+          screenY: touch.screenY,
+          button: 0,
+          buttons,
+        }));
+      } else {
+        const mouseType = type.replace('pointer', 'mouse');
+        target.dispatchEvent(new MouseEvent(mouseType, {
+          bubbles: true,
+          cancelable: true,
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          screenX: touch.screenX,
+          screenY: touch.screenY,
+          button: 0,
+          buttons,
+        }));
+      }
+    }
   };
 
-  const attachBridge = () => {
-    relayTouchAsMouse(frameEl.querySelector('canvas') || frameEl.querySelector('#game'));
+  const touchHandler = (phase) => (event) => {
+    if (!launched) return;
+    const touch = event.changedTouches?.[0];
+    if (!touch) return;
+    focusGameTarget();
+    if (phase === 'start') {
+      dispatchPointerLikeEvents('pointermove', touch);
+      dispatchPointerLikeEvents('pointerdown', touch);
+      dispatchPointerLikeEvents('mousedown', touch);
+    } else if (phase === 'move') {
+      dispatchPointerLikeEvents('pointermove', touch);
+      dispatchPointerLikeEvents('mousemove', touch);
+    } else {
+      dispatchPointerLikeEvents('pointerup', touch);
+      dispatchPointerLikeEvents('mouseup', touch);
+      dispatchPointerLikeEvents('click', touch);
+    }
+    event.preventDefault();
+    event.stopPropagation();
   };
 
-  attachBridge();
-  const observer = new MutationObserver(attachBridge);
-  observer.observe(frameEl, { childList: true, subtree: true });
+  frameEl.addEventListener('touchstart', touchHandler('start'), { capture: true, passive: false });
+  frameEl.addEventListener('touchmove', touchHandler('move'), { capture: true, passive: false });
+  frameEl.addEventListener('touchend', touchHandler('end'), { capture: true, passive: false });
+  frameEl.addEventListener('touchcancel', touchHandler('end'), { capture: true, passive: false });
 }
 
 function getPspPresetKey() {
