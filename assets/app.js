@@ -118,6 +118,17 @@ let library = {};
 let objectUrl = null;
 let launched = false;
 
+function resolveEntryUrl(entry) {
+  if (!entry) return '';
+  if (typeof entry.url === 'string' && entry.url.trim()) return entry.url.trim();
+  if (typeof entry.file === 'string' && entry.file.trim()) return entry.file.trim();
+  return '';
+}
+
+function isExternalUrl(value) {
+  return /^https?:\/\//i.test(String(value || ''));
+}
+
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
@@ -145,7 +156,8 @@ function populateDropdown() {
   entries.forEach((entry, index) => {
     const option = document.createElement('option');
     option.value = String(index);
-    option.textContent = entry.title;
+    const suffix = isExternalUrl(resolveEntryUrl(entry)) ? ' (cloud)' : '';
+    option.textContent = `${entry.title}${suffix}`;
     dropdownEl.appendChild(option);
   });
 
@@ -193,7 +205,12 @@ dropdownEl?.addEventListener('change', () => {
     if (inputEl) inputEl.value = '';
     setStatus(`Ready to launch curated game: ${selectedGame.title}`);
     if (dropdownNotesEl) {
-      dropdownNotesEl.textContent = selectedGame.notes || 'Curated game selected.';
+      const locationNote = isExternalUrl(resolveEntryUrl(selectedGame))
+        ? 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.'
+        : null;
+      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', locationNote]
+        .filter(Boolean)
+        .join(' ');
     }
   } else if (selectedFile) {
     setStatus(`Ready to launch uploaded file: ${selectedFile.name}`);
@@ -223,8 +240,17 @@ buttonEl?.addEventListener('click', () => {
     gameUrl = objectUrl;
     gameName = selectedFile.name.replace(/\.[^.]+$/, '');
   } else if (selectedGame) {
-    gameUrl = selectedGame.file;
+    gameUrl = resolveEntryUrl(selectedGame);
     gameName = selectedGame.title;
+  }
+
+  if (!gameUrl) {
+    setStatus('This curated entry is missing a file URL.');
+    launched = false;
+    if (buttonEl) buttonEl.disabled = false;
+    if (inputEl) inputEl.disabled = false;
+    if (dropdownEl) dropdownEl.disabled = false;
+    return;
   }
 
   frameEl.classList.remove('empty');
@@ -248,7 +274,8 @@ buttonEl?.addEventListener('click', () => {
   script.async = true;
   document.body.appendChild(script);
 
-  setStatus(`Loading ${gameName}… first launch can take a little longer while the browser caches core files.`);
+  const sourceLabel = isExternalUrl(gameUrl) ? ' from cloud storage' : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.`);
 });
 
 loadLibrary().then(() => {

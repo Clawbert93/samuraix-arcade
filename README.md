@@ -21,6 +21,18 @@ Zero-cost browser arcade for the SamuraiX Discord community.
 2. Add an entry to `data/game-library.json` under the right emulator key
 3. Push to GitHub Pages
 
+For large externally hosted assets, you can also use a public HTTPS URL instead of a local repo path.
+
+Example:
+
+```json
+{
+  "title": "Grand Theft Auto: Liberty City Stories",
+  "url": "https://arcade-assets.example.com/psp/Grand_Theft_Auto_Liberty_City_Stories.7z",
+  "notes": "Large PSP title hosted outside GitHub Pages to avoid repo bloat and Pages limits."
+}
+```
+
 Current emulator keys:
 
 - `gb`
@@ -37,6 +49,33 @@ Current emulator keys:
 - No backend
 - No cloud save sync
 - No ROM hosting service or user account storage layer
+
+## Large game hosting mode
+
+For DS, PS1, and PSP files that are too large for GitHub Pages or normal git comfort, the preferred setup is:
+
+1. Keep the site itself on GitHub Pages
+2. Host large archives on object storage or a CDN-backed bucket
+3. Point `data/game-library.json` entries at public HTTPS asset URLs via `url`
+
+Recommended storage targets:
+
+- Cloudflare R2
+- Backblaze B2
+- S3-compatible object storage
+
+Recommended size cleanup before upload:
+
+- PS1 multi-file games -> convert to `.chd` when practical
+- PSP `.iso` -> convert to `.cso` when practical
+
+Staging list for the current skipped large files lives in:
+
+- `data/pending-large-assets.json`
+
+Helper script for switching a curated entry over to external hosting:
+
+- `scripts/arcade_set_external_url.py`
 
 ## Important caveats
 

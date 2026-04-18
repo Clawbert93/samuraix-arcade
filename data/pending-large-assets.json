@@ -1,0 +1,178 @@
+{
+  "pendingExternal": [
+    {
+      "system": "psp",
+      "title": "Grand Theft Auto: Liberty City Stories",
+      "sourceFilename": "Grand_Theft_Auto_-_Liberty_City_Stories_USA_EnFrDeEsIt_v3.00.7z",
+      "sizeBytes": 446310026,
+      "preferredStorageKey": "psp/Grand_Theft_Auto_Liberty_City_Stories.7z",
+      "preferredPackaging": ".cso if clean conversion is available, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psp",
+      "title": "Assassin's Creed: Bloodlines",
+      "sourceFilename": "Assassins_Creed__Bloodlines.zip",
+      "sizeBytes": 439634277,
+      "preferredStorageKey": "psp/Assassins_Creed_Bloodlines.zip",
+      "preferredPackaging": ".cso if clean conversion is available, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Tony Hawk's Pro Skater 2",
+      "sourceFilename": "Tony_Hawks_Pro_Skater_2.zip",
+      "sizeBytes": 481185692,
+      "preferredStorageKey": "psx/Tony_Hawks_Pro_Skater_2.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Crash Bandicoot",
+      "sourceFilename": "Crash_Bandicoot.zip",
+      "sizeBytes": 449856303,
+      "preferredStorageKey": "psx/Crash_Bandicoot.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Resident Evil 2: Dual Shock Ver.",
+      "sourceFilename": "Resident_Evil_2__Dual_Shock_Ver..zip",
+      "sizeBytes": 397255939,
+      "preferredStorageKey": "psx/Resident_Evil_2_Dual_Shock_Ver.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Need for Speed III: Hot Pursuit",
+      "sourceFilename": "Need_for_Speed_3__Hot_Pursuit.zip",
+      "sizeBytes": 350107975,
+      "preferredStorageKey": "psx/Need_for_Speed_3_Hot_Pursuit.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Crash Team Racing",
+      "sourceFilename": "Crash_Team_Racing_U_SCUS-94426.rar",
+      "sizeBytes": 280789156,
+      "preferredStorageKey": "psx/Crash_Team_Racing.rar",
+      "preferredPackaging": "repack to zip or chd before hosting if practical",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Resident Evil 3: Nemesis",
+      "sourceFilename": "Resident_Evil_3__Nemesis.zip",
+      "sizeBytes": 266252323,
+      "preferredStorageKey": "psx/Resident_Evil_3_Nemesis.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Digimon World",
+      "sourceFilename": "Digimon_World.zip",
+      "sizeBytes": 186972221,
+      "preferredStorageKey": "psx/Digimon_World.zip",
+      "preferredPackaging": ".chd if conversion is clean, otherwise keep archive",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "Kingdom Hearts Re:coded",
+      "sourceFilename": "Kingdom_Hearts__Re-coded.zip",
+      "sizeBytes": 206918452,
+      "preferredStorageKey": "nds/Kingdom_Hearts_Re-coded.zip",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "The Simpsons Game",
+      "sourceFilename": "Simpsons_Game_The.zip",
+      "sizeBytes": 108348859,
+      "preferredStorageKey": "nds/The_Simpsons_Game.zip",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "psx",
+      "title": "Yu-Gi-Oh! Forbidden Memories",
+      "sourceFilename": "Yu-Gi-Oh_Forbidden_Memories.zip",
+      "sizeBytes": 96798065,
+      "preferredStorageKey": "psx/Yu-Gi-Oh_Forbidden_Memories.7z",
+      "preferredPackaging": "the uploaded file is actually a 7z archive despite the .zip name",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "Pokemon Black Version 2",
+      "sourceFilename": "6111_-_Pokemon_Black_2_US_frieNDS.7z",
+      "sizeBytes": 81468810,
+      "preferredStorageKey": "nds/Pokemon_Black_Version_2.7z",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "Pokemon Conquest",
+      "sourceFilename": "Pokemon_Conquest.zip",
+      "sizeBytes": 75622865,
+      "preferredStorageKey": "nds/Pokemon_Conquest.zip",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "The Sims 3",
+      "sourceFilename": "Sims_3_The.zip",
+      "sizeBytes": 69990274,
+      "preferredStorageKey": "nds/The_Sims_3.zip",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    },
+    {
+      "system": "nds",
+      "title": "Kirby Super Star Ultra",
+      "sourceFilename": "Kirby_Super_Star_Ultra.zip",
+      "sizeBytes": 62696733,
+      "preferredStorageKey": "nds/Kirby_Super_Star_Ultra.zip",
+      "preferredPackaging": "archive is fine if emulator accepts it cleanly",
+      "status": "pending_external_hosting"
+    }
+  ],
+  "recommendMoveExternal": [
+    {
+      "system": "nds",
+      "title": "Grand Theft Auto: Chinatown Wars",
+      "currentLibraryFile": "games/nds/Grand_Theft_Auto_Chinatown_Wars.7z",
+      "sizeBytes": 62015584,
+      "reason": "already live, but above GitHub's recommended 50 MB threshold"
+    },
+    {
+      "system": "nds",
+      "title": "Pokemon HeartGold Version",
+      "currentLibraryFile": "games/nds/Pokemon_HeartGold_Version.zip",
+      "sizeBytes": 60760196,
+      "reason": "already live, but above GitHub's recommended 50 MB threshold"
+    },
+    {
+      "system": "nds",
+      "title": "Pokemon SoulSilver Version",
+      "currentLibraryFile": "games/nds/Pokemon_SoulSilver_Version.zip",
+      "sizeBytes": 60760051,
+      "reason": "already live, but above GitHub's recommended 50 MB threshold"
+    },
+    {
+      "system": "nds",
+      "title": "Pokemon Platinum Version (USA) (Rev 1)",
+      "currentLibraryFile": "games/nds/Pokemon_Platinum_Rev1.zip",
+      "sizeBytes": 50777907,
+      "reason": "already live, but just over GitHub's recommended 50 MB threshold"
+    }
+  ]
+}
