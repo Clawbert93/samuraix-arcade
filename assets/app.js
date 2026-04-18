@@ -142,6 +142,7 @@ let selectedGame = null;
 let library = {};
 let objectUrl = null;
 let launched = false;
+let ndsTouchBridgeObserver = null;
 
 const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
@@ -200,6 +201,10 @@ const PSP_PRESETS = {
   },
 };
 const PSP_PRESET_KEYS = Object.keys(PSP_PRESETS);
+const NDS_TOUCH_OPTIONS = {
+  desmume_pointer_mouse: 'enabled',
+  desmume_pointer_type: 'touch',
+};
 
 function sameOriginCloudProxyUrl(rawUrl) {
   try {
@@ -305,7 +310,72 @@ function getRuntimeDataBase() {
 }
 
 function installNdsTouchBridge() {
-  return;
+  if (core !== 'nds' || !isLikelyTouchDevice() || !frameEl) return;
+
+  const bindCanvasTouchBridge = (node) => {
+    if (!(node instanceof HTMLCanvasElement) || node.dataset.ndsTouchBridge === '1') return;
+    node.dataset.ndsTouchBridge = '1';
+
+    const relay = (event) => {
+      const touches = Array.from(event.changedTouches || []);
+      if (!touches.length) return;
+
+      const pointerType = event.type === 'touchend' || event.type === 'touchcancel' ? 'pointerup' : (event.type === 'touchmove' ? 'pointermove' : 'pointerdown');
+      const mouseType = event.type === 'touchend' || event.type === 'touchcancel' ? 'mouseup' : (event.type === 'touchmove' ? 'mousemove' : 'mousedown');
+
+      for (const touch of touches) {
+        const eventInit = {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          screenX: touch.screenX,
+          screenY: touch.screenY,
+          pageX: touch.pageX,
+          pageY: touch.pageY,
+          button: 0,
+          buttons: mouseType === 'mouseup' ? 0 : 1,
+          ctrlKey: event.ctrlKey,
+          shiftKey: event.shiftKey,
+          altKey: event.altKey,
+          metaKey: event.metaKey,
+          view: window,
+        };
+
+        if (typeof window.PointerEvent === 'function') {
+          node.dispatchEvent(new PointerEvent(pointerType, {
+            ...eventInit,
+            pointerId: touch.identifier + 1,
+            pointerType: 'touch',
+            isPrimary: touch.identifier === 0,
+            pressure: mouseType === 'mouseup' ? 0 : 0.5,
+          }));
+        }
+
+        node.dispatchEvent(new MouseEvent(mouseType, eventInit));
+      }
+
+      event.preventDefault();
+    };
+
+    ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach((type) => {
+      node.addEventListener(type, relay, { passive: false });
+    });
+  };
+
+  frameEl.querySelectorAll('#game canvas').forEach(bindCanvasTouchBridge);
+
+  if (ndsTouchBridgeObserver) ndsTouchBridgeObserver.disconnect();
+  ndsTouchBridgeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLCanvasElement) bindCanvasTouchBridge(node);
+        if (node instanceof HTMLElement) node.querySelectorAll?.('canvas').forEach(bindCanvasTouchBridge);
+      });
+    });
+  });
+  ndsTouchBridgeObserver.observe(frameEl, { childList: true, subtree: true });
 }
 
 function getPspPresetKey() {
@@ -326,8 +396,8 @@ function getUnsupportedArchiveMessage(url, activeCore = core) {
   return 'This PSP entry is still packaged as a .rar archive. EmulatorJS boots to the menu instead of the game for that format here, so I need to repack it to .iso, .cso, .zip, or .7z.';
 }
 
-function getPspStorageKey(gameUrl, gameName) {
-  let identifier = '1-psp';
+function getSystemStorageKey(activeCore, gameUrl, gameName) {
+  let identifier = `1-${activeCore}`;
   if (typeof gameName === 'string' && gameName) {
     identifier += `-${gameName}`;
   } else if (typeof gameUrl === 'string' && gameUrl !== 'game' && !gameUrl.startsWith('blob:')) {
@@ -336,18 +406,22 @@ function getPspStorageKey(gameUrl, gameName) {
   return `ejs-${identifier}-settings`;
 }
 
-function applyPspPresetToStorage(gameUrl, gameName, preset) {
-  if (!window.localStorage || !preset?.options) return;
-  const storageKey = getPspStorageKey(gameUrl, gameName);
+function applyCoreOptionsToStorage(activeCore, gameUrl, gameName, options) {
+  if (!window.localStorage || !options || typeof options !== 'object') return;
+  const storageKey = getSystemStorageKey(activeCore, gameUrl, gameName);
   let existing = { controlSettings: {}, settings: {}, cheats: [] };
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
     if (parsed && typeof parsed === 'object') existing = { ...existing, ...parsed };
   } catch (error) {}
-  existing.settings = { ...(existing.settings || {}), ...preset.options };
+  existing.settings = { ...(existing.settings || {}), ...options };
   if (!Array.isArray(existing.cheats)) existing.cheats = [];
   if (!existing.controlSettings || typeof existing.controlSettings !== 'object') existing.controlSettings = {};
   localStorage.setItem(storageKey, JSON.stringify(existing));
+}
+
+function applyPspPresetToStorage(gameUrl, gameName, preset) {
+  applyCoreOptionsToStorage('psp', gameUrl, gameName, preset?.options);
 }
 
 function syncPspPresetUi() {
@@ -366,6 +440,11 @@ function syncEmbeddedWarnings() {
       embeddedWarningEl.innerHTML = embeddedMode
         ? '<strong>PSP status:</strong> experimental and currently unreliable. In Discord/webviews it is even worse, expect bad performance, broken input, black screens, and failed boots. Browser popout is still only a maybe, not a promise.'
         : '<strong>PSP status:</strong> experimental and currently unreliable. Expect bad performance, broken input, black screens, and some games failing to boot. We are keeping it visible for testing, but it is not a dependable mode yet.';
+    } else if (core === 'nds' && isLikelyTouchDevice()) {
+      embeddedWarningEl.hidden = false;
+      embeddedWarningEl.innerHTML = embeddedMode
+        ? '<strong>DS touch status:</strong> this build now forces the DeSmuME touch-style pointer mode on touch devices. If a game still ignores finger input here, the current webview/browser path may still behave like desktop-only stylus support.'
+        : '<strong>DS touch status:</strong> this build now forces the DeSmuME touch-style pointer mode on touch devices. If a game still ignores finger input, DS stylus support may still be desktop-only in this browser for now.';
     } else if (embeddedMode) {
       embeddedWarningEl.hidden = false;
       embeddedWarningEl.innerHTML = '<strong>Embedded mode:</strong> if controls feel weird in a webview, use Open in browser for the cleanest version.';
@@ -438,7 +517,7 @@ function setSelectedGame(chosen) {
         : null;
       const archiveWarning = getUnsupportedArchiveMessage(resolveEntryUrl(selectedGame));
       const dsTouchNote = core === 'nds' && isLikelyTouchDevice()
-        ? 'Touch device detected, so DS launches use the safer DeSmuME fallback plus an older EmulatorJS data build for better stylus odds.'
+        ? 'Touch device detected, so DS launches use the safer DeSmuME fallback, an older EmulatorJS data build, and forced touch-style stylus settings for better odds.'
         : null;
       dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote, archiveWarning, dsTouchNote]
         .filter(Boolean)
@@ -591,21 +670,27 @@ buttonEl?.addEventListener('click', () => {
 
   const runtimeCore = getRuntimeCore();
   const runtimeDataBase = getRuntimeDataBase();
+  const pspPreset = core === 'psp' ? getPspPreset() : null;
+  const ndsTouchOptions = core === 'nds' && isLikelyTouchDevice() ? NDS_TOUCH_OPTIONS : null;
+  const runtimeDefaultOptions = {
+    ...(pspPreset?.options || {}),
+    ...(ndsTouchOptions || {}),
+  };
 
   window.EJS_player = '#game';
   window.EJS_core = runtimeCore;
   window.EJS_gameUrl = gameUrl;
   window.EJS_gameName = gameName;
   window.EJS_pathtodata = runtimeDataBase;
-  const pspPreset = core === 'psp' ? getPspPreset() : null;
   if (pspPreset) applyPspPresetToStorage(gameUrl, gameName, pspPreset);
+  if (ndsTouchOptions) applyCoreOptionsToStorage(runtimeCore, gameUrl, gameName, ndsTouchOptions);
 
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.8;
   window.EJS_color = '#2dd46f';
   window.EJS_backgroundColor = '#07110a';
   window.EJS_threads = core === 'psp';
-  window.EJS_defaultOptions = pspPreset ? pspPreset.options : undefined;
+  window.EJS_defaultOptions = Object.keys(runtimeDefaultOptions).length ? runtimeDefaultOptions : undefined;
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
   window.EJS_controlScheme = core === 'nds' ? 'nds' : undefined;
@@ -630,7 +715,7 @@ buttonEl?.addEventListener('click', () => {
     ? ` PSP preset active: ${getPspPreset().label}.`
     : '';
   const ndsTouchFallbackNote = core === 'nds' && isLikelyTouchDevice()
-    ? ' Touch device detected, so this DS launch is using the safer DeSmuME fallback and a pinned EmulatorJS build for better stylus compatibility.'
+    ? ' Touch device detected, so this DS launch is using the safer DeSmuME fallback, a pinned EmulatorJS build, and forced touch-style stylus settings.'
     : '';
   setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}`);
   syncLaunchState();
@@ -674,7 +759,7 @@ loadLibrary().then(() => {
       ? 'Choose a curated game or upload a file to start. PSP inside Discord is experimental and unreliable, so browser popout is recommended if you insist on testing it.'
       : 'Choose a curated game or upload a file to start. PSP is experimental and unreliable right now, so expect failures.')
     : (core === 'nds' && isLikelyTouchDevice()
-      ? 'Choose a curated game or upload a file to start. On touch devices DS now uses a safer fallback path for better stylus odds.'
+      ? 'Choose a curated game or upload a file to start. On touch devices DS now uses a safer fallback path and forced touch-style stylus settings, but some browsers may still behave like desktop-only stylus support.'
       : 'Choose a curated game or upload a file to start.'));
   syncLaunchState();
   applyRequestedGame();
