@@ -299,7 +299,7 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_volume = 0.8;
   window.EJS_color = '#2dd46f';
   window.EJS_backgroundColor = '#07110a';
-  window.EJS_threads = false;
+  window.EJS_threads = core === 'psp';
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
 
