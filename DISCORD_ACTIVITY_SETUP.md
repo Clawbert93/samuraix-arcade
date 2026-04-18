@@ -11,9 +11,10 @@
 
 1. Create or choose a Discord application in the Discord Developer Portal.
 2. Enable Activities / Embedded App for that application.
-3. In `Activities -> Settings`, use the Activity launch URL:
-   - `https://<arcade-domain>/activity.html?client_id=<DISCORD_APP_ID>&discord=1`
-4. In `Activities -> URL Mappings`, add:
+3. In `Activities -> Settings`, turn Activities on and enable the supported platforms you want.
+4. In `Activities -> URL Mappings`, set the root entry point to:
+   - `/` -> `<arcade-domain>/activity.html`
+5. Also add:
    - `/emu` -> `cdn.emulatorjs.org`
    - `/esm` -> `esm.sh`
 
@@ -27,7 +28,7 @@ Suggested shape:
 ## Recommended next implementation steps
 
 1. Attach custom domain on Cloudflare.
-2. Add the final Activity launch URL in the Discord app settings.
+2. Point the root Activity URL mapping at `/activity.html` on the arcade host.
 3. Add the `/emu` and `/esm` URL mappings in the Discord app.
 4. Replace placeholder links/buttons in `activity.html` with richer presence-aware launch cards.
 5. Add party-room state (who launched what, featured game cards, invite button, session-ready fullscreen/popup guidance).
