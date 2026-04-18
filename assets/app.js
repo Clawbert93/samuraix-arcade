@@ -120,9 +120,24 @@ let library = {};
 let objectUrl = null;
 let launched = false;
 
+const CLOUD_PROXY_HOSTS = new Set([
+  'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
+]);
+
+function sameOriginCloudProxyUrl(rawUrl) {
+  try {
+    const parsed = new URL(String(rawUrl || ''));
+    const shouldProxy = window.location.hostname !== 'clawbert93.github.io' && CLOUD_PROXY_HOSTS.has(parsed.hostname);
+    if (!shouldProxy) return rawUrl;
+    return `${window.location.origin}/cloud-assets${parsed.pathname}${parsed.search}`;
+  } catch (error) {
+    return rawUrl;
+  }
+}
+
 function resolveEntryUrl(entry) {
   if (!entry) return '';
-  if (typeof entry.url === 'string' && entry.url.trim()) return entry.url.trim();
+  if (typeof entry.url === 'string' && entry.url.trim()) return sameOriginCloudProxyUrl(entry.url.trim());
   if (typeof entry.file === 'string' && entry.file.trim()) return entry.file.trim();
   return '';
 }

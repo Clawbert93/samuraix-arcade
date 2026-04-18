@@ -99,6 +99,10 @@ Use these settings:
 
 The build script copies the site shell, cover art, headers, and only the local game files that fit Cloudflare's static asset limit. Bigger titles should stay on external hosting like R2.
 
+## Same-origin cloud asset delivery
+
+On the Cloudflare deployment, oversized games hosted on R2 are now intended to load through the same arcade origin via `/cloud-assets/...` instead of exposing raw `r2.dev` links directly to the browser runtime. That improves compatibility with stricter browsers, work-managed machines, and the eventual Discord Activity wrapper.
+
 ## Important caveats
 
 - Use only legal ROMs or homebrew you are allowed to play

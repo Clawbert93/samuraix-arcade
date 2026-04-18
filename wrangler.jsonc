@@ -1,12 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "samuraix-arcade",
+  "main": "./worker.js",
   "compatibility_date": "2026-04-18",
   "observability": {
     "enabled": true
   },
   "assets": {
     "directory": "./dist"
+  },
+  "vars": {
+    "R2_PUBLIC_BASE_URL": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev"
   },
   "compatibility_flags": [
     "nodejs_compat"
