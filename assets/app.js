@@ -82,6 +82,14 @@ const SYSTEMS = {
 const params = new URLSearchParams(window.location.search);
 const core = SYSTEMS[params.get('core')] ? params.get('core') : 'gb';
 const requestedGameKey = String(params.get('game') || '').trim().toLowerCase();
+const CANONICAL_ARCADE_ORIGIN = 'https://samuraix-arcade.roberteverland22.workers.dev';
+
+if (core === 'psp' && window.location.hostname === 'clawbert93.github.io') {
+  const target = new URL(`${CANONICAL_ARCADE_ORIGIN}/play`);
+  for (const [key, value] of params.entries()) target.searchParams.append(key, value);
+  target.searchParams.set('core', 'psp');
+  window.location.replace(target.toString());
+}
 const autoLaunchRequested = ['1', 'true', 'yes'].includes(String(params.get('launch') || params.get('autostart') || '').trim().toLowerCase());
 const config = SYSTEMS[core];
 const embeddedMode = params.get('embedded') === '1';
