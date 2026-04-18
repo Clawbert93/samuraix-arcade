@@ -21,12 +21,83 @@
       "notes": "User-provided file arrived with an .mp3 extension, but was identified as a Game Boy ROM and added to the curated GB/GBC dropdown."
     }
   ],
-  "snes": [],
+  "snes": [
+    {
+      "title": "The Legend of Zelda: A Link to the Past",
+      "file": "games/snes/Legend_of_Zelda_A_Link_to_the_Past.zip",
+      "notes": "User-provided SNES release from the Discord games channel, hosted as the original archive for the curated SNES dropdown."
+    },
+    {
+      "title": "Super Mario All-Stars + Super Mario World",
+      "file": "games/snes/Super_Mario_All-Stars_Plus_Super_Mario_World.zip",
+      "notes": "User-provided SNES release from the Discord games channel, hosted as the original archive for the curated SNES dropdown."
+    },
+    {
+      "title": "Super Mario World 2: Yoshi's Island (V1.1)",
+      "file": "games/snes/Super_Mario_World_2_Yoshis_Island_V11.zip",
+      "notes": "User-provided SNES release from the Discord games channel, hosted as the original archive for the curated SNES dropdown."
+    },
+    {
+      "title": "Super Bomberman 5 Gold Cartridge",
+      "file": "games/snes/Super_Bomberman_5_Gold_Cartridge.zip",
+      "notes": "User-provided SNES release from the Discord games channel, hosted as the original archive for the curated SNES dropdown."
+    }
+  ],
   "gba": [
     {
       "title": "Pokemon Glazed 7B",
       "file": "games/gba/Pokemon_Glazed_7B.gba",
       "notes": "User-provided GBA ROM added to the curated GBA dropdown. The extra .url file from the zip was ignored."
+    },
+    {
+      "title": "Kingdom Hearts: Chain of Memories",
+      "file": "games/gba/Kingdom_Hearts_Chain_of_Memories.zip",
+      "notes": "User-provided GBA release from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Mega Man Battle Network 4: Blue Moon",
+      "file": "games/gba/Mega_Man_Battle_Network_4_Blue_Moon.zip",
+      "notes": "User-provided GBA release from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Mega Man Battle Network 4: Red Sun",
+      "file": "games/gba/Mega_Man_Battle_Network_4_Red_Sun.zip",
+      "notes": "User-provided GBA release from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Mega Man Battle Network 5: Team Colonel",
+      "file": "games/gba/Mega_Man_Battle_Network_5_Team_Colonel.zip",
+      "notes": "User-provided GBA release from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon FireRed: Rocket Edition",
+      "file": "games/gba/Pokemon_FireRed_Rocket_Edition.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon AshGray b4.5.3",
+      "file": "games/gba/Pokemon_AshGray_b4_5_3.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon Emerald Multiplayer a0.4.3",
+      "file": "games/gba/Pokemon_Emerald_Multiplayer_a0_4_3.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon Fusion Origins v3.8",
+      "file": "games/gba/Pokemon_Fusion_Origins_v3_8.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon Metal Red v2.04",
+      "file": "games/gba/Pokemon_Metal_Red_v2_04.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
+    },
+    {
+      "title": "Pokemon Ruby Destiny: Reign of Legends 2016 v4.1",
+      "file": "games/gba/Pokemon_Ruby_Destiny_Reign_of_Legends_2016_v4_1.zip",
+      "notes": "User-provided GBA ROM hack from the Discord games channel, hosted as the original archive for the curated GBA dropdown."
     }
   ],
   "nds": [
@@ -39,9 +110,136 @@
       "title": "Pokemon Platinum Version (USA) (Rev 1)",
       "file": "games/nds/Pokemon_Platinum_Rev1.zip",
       "notes": "User-provided Nintendo DS release from the Discord games channel. Hosted as the zip because the raw .nds file is larger than GitHub's normal file-size limit."
+    },
+    {
+      "title": "Grand Theft Auto: Chinatown Wars",
+      "file": "games/nds/Grand_Theft_Auto_Chinatown_Wars.7z",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown."
+    },
+    {
+      "title": "Digimon World DS",
+      "file": "games/nds/Digimon_World_DS.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon Ranger",
+      "file": "games/nds/Pokemon_Ranger.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Hello Kitty: Big City Dreams",
+      "file": "games/nds/Hello_Kitty_Big_City_Dreams.7z",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown."
+    },
+    {
+      "title": "Yoshi's Island DS",
+      "file": "games/nds/Yoshis_Island_DS.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon Pearl Version",
+      "file": "games/nds/Pokemon_Pearl_Version.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Castlevania: Dawn of Sorrow",
+      "file": "games/nds/Castlevania_Dawn_of_Sorrow.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon Mystery Dungeon: Explorers of Sky",
+      "file": "games/nds/Pokemon_Mystery_Dungeon_Explorers_of_Sky.7z",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown."
+    },
+    {
+      "title": "The Legend of Zelda: Phantom Hourglass",
+      "file": "games/nds/Legend_of_Zelda_Phantom_Hourglass.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Nintendogs: Labrador & Friends",
+      "file": "games/nds/Nintendogs_Labrador_and_Friends.7z",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon Diamond Version",
+      "file": "games/nds/Pokemon_Diamond_Version.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Animal Crossing: Wild World",
+      "file": "games/nds/Animal_Crossing_Wild_World.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon HeartGold Version",
+      "file": "games/nds/Pokemon_HeartGold_Version.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Naruto Shippuden: Naruto vs Sasuke",
+      "file": "games/nds/Naruto_Shippuden_Naruto_vs_Sasuke.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+    },
+    {
+      "title": "Pokemon SoulSilver Version",
+      "file": "games/nds/Pokemon_SoulSilver_Version.zip",
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
     }
   ],
-  "n64": [],
-  "psx": [],
+  "n64": [
+    {
+      "title": "Mario Kart 64",
+      "file": "games/n64/Mario_Kart_64.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "GoldenEye 007",
+      "file": "games/n64/GoldenEye_007.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "Super Smash Bros.",
+      "file": "games/n64/Super_Smash_Bros.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "Super Mario 64",
+      "file": "games/n64/Super_Mario_64.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "Donkey Kong 64",
+      "file": "games/n64/Donkey_Kong_64.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "The Legend of Zelda: Ocarina of Time",
+      "file": "games/n64/Legend_of_Zelda_Ocarina_of_Time.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "The Legend of Zelda: Majora's Mask",
+      "file": "games/n64/Legend_of_Zelda_Majoras_Mask.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "Pokemon Stadium 2",
+      "file": "games/n64/Pokemon_Stadium_2.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    },
+    {
+      "title": "Pokemon Snap",
+      "file": "games/n64/Pokemon_Snap.zip",
+      "notes": "User-provided Nintendo 64 release from the Discord games channel, hosted as the original archive for the curated N64 dropdown."
+    }
+  ],
+  "psx": [
+    {
+      "title": "Harvest Moon: Back to Nature",
+      "file": "games/psx/Harvest_Moon_Back_to_Nature.7z",
+      "notes": "User-provided PlayStation release from the Discord games channel. The upload was mislabeled .zip but is actually a 7z archive, so it is hosted with the correct extension for the curated PS1 dropdown."
+    }
+  ],
   "psp": []
 }
