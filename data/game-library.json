@@ -317,6 +317,18 @@
   ],
   "psp": [
     {
+      "title": "Crisis Core: Final Fantasy VII",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Crisis_Core_Final_Fantasy_VII_USA_READNFO_PSP-Googlecus.rar",
+      "webTier": "not-recommended",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie to R2. Heavy action RPG, so treat it as browser-first at best and generally not recommended for normal web play."
+    },
+    {
+      "title": "Final Fantasy Tactics: The War of the Lions",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Final_Fantasy_Tactics_The_War_Of_The_Lions_USA_PSP-pSyPSP.rar",
+      "webTier": "experimental",
+      "notes": "PSP asset uploaded by Robbie in the Discord games channel, then mirrored into R2. Turn-based tactics makes this a more realistic experimental web candidate than the heaviest action PSP games."
+    },
+    {
       "title": "Grand Theft Auto: Liberty City Stories",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Liberty_City_Stories.7z",
       "webTier": "browser-first",
