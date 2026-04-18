@@ -21,28 +21,35 @@ async function proxyCloudAsset(request, env) {
     return new Response('Missing cloud asset path.', { status: 400 });
   }
 
-  const upstream = await fetch(joinTargetUrl(url.pathname, url.search, env), {
+  const isRangeRequest = request.headers.has('range');
+  const fetchOptions = {
     method: request.method,
     headers: makeProxyHeaders(request),
     redirect: 'follow',
-    cf: {
+  };
+
+  if (!isRangeRequest) {
+    fetchOptions.cf = {
       cacheEverything: true,
       cacheTtlByStatus: {
         '200-299': 31536000,
         '404': 60,
         '500-599': 0,
       },
-    },
-  });
+    };
+  }
+
+  const upstream = await fetch(joinTargetUrl(url.pathname, url.search, env), fetchOptions);
 
   const headers = new Headers(upstream.headers);
   headers.set('Cross-Origin-Resource-Policy', 'same-origin');
   headers.set('Accept-Ranges', headers.get('Accept-Ranges') || 'bytes');
-  headers.set('Cache-Control', headers.get('Cache-Control') || 'public, max-age=31536000, immutable');
-  headers.set('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+  if (!isRangeRequest && upstream.status >= 200 && upstream.status < 300) {
+    headers.set('Cache-Control', headers.get('Cache-Control') || 'public, max-age=31536000, immutable');
+    headers.set('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+  }
   headers.delete('Access-Control-Allow-Origin');
   headers.delete('Access-Control-Expose-Headers');
-  headers.delete('Vary');
 
   return new Response(upstream.body, {
     status: upstream.status,
