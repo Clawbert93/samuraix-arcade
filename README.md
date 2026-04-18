@@ -104,6 +104,31 @@ Use these settings:
 
 The build script copies the site shell, cover art, headers, and only the local game files that fit Cloudflare's static asset limit. Bigger titles should stay on external hosting like R2.
 
+## Fast Worker deploy path
+
+This repo now includes a simple build-and-deploy helper for the live Cloudflare Worker host.
+
+One-time or ad hoc deploy flow:
+
+```bash
+cd /home/robert/OpenClawProjects/samuraix-arcade
+export CLOUDFLARE_API_TOKEN=your_token_here
+npm run deploy:cf
+```
+
+What it does:
+
+1. builds the `dist/` bundle with `python3 scripts/build_cloudflare_pages_bundle.py`
+2. deploys the Worker with `npx wrangler deploy`
+
+Useful commands:
+
+- `npm run build:cf` -> rebuild `dist/` only
+- `npm run deploy:cf` -> build then deploy
+- `npm run dev:cf` -> local Wrangler dev session
+
+If `CLOUDFLARE_API_TOKEN` is missing, the helper stops early and prints the exact export command shape instead of failing deep inside Wrangler.
+
 ## Same-origin cloud asset delivery
 
 On the Cloudflare deployment, oversized games hosted on R2 are now intended to load through the same arcade origin via `/cloud-assets/...` instead of exposing raw `r2.dev` links directly to the browser runtime. That improves compatibility with stricter browsers, work-managed machines, and the eventual Discord Activity wrapper.

@@ -2,9 +2,10 @@
 
 ## What is already prepared
 
-- `activity.html` provides an Activity-friendly landing shell.
-- `assets/activity.js` can initialize the Discord Embedded App SDK once a real Discord application client ID is provided.
-- `play.html?embedded=1` is the intended launch shape for Activity-mode players.
+- `activity.html` is now a real Activity-friendly game hub, not just a placeholder shell.
+- `assets/activity.js` loads the curated library into featured launch lanes, system shelves, and browser-first PSP recommendations.
+- `play.html?embedded=1&activity=1` is the intended launch shape for Activity-mode players.
+- Embedded player mode now includes a lightweight top nav so people can jump back to the Discord hub or switch systems without feeling stranded.
 - Cloud games are now proxied through the arcade origin using `/cloud-assets/...`, which is the right foundation for Discord embedding.
 
 ## Next manual steps in Discord
@@ -27,12 +28,24 @@ Suggested shape:
 
 ## Recommended next implementation steps
 
-1. Attach custom domain on Cloudflare.
+1. Attach custom domain on Cloudflare if Robbie wants a cleaner public host later.
 2. Point the root Activity URL mapping at `/activity.html` on the arcade host.
 3. Add the `/emu` and `/esm` URL mappings in the Discord app.
-4. Replace placeholder links/buttons in `activity.html` with richer presence-aware launch cards.
-5. Add party-room state (who launched what, featured game cards, invite button, session-ready fullscreen/popup guidance).
+4. Deploy the latest Worker build so the richer hub is live.
+5. After that, add optional party-room state like who launched what, invite affordances, and richer session/presence behavior.
+
+## Fast deploy note
+
+The repo includes a simple live deploy helper now:
+
+```bash
+cd /home/robert/OpenClawProjects/samuraix-arcade
+export CLOUDFLARE_API_TOKEN=your_token_here
+npm run deploy:cf
+```
+
+That script rebuilds `dist/` and runs `npx wrangler deploy`.
 
 ## Important reality check
 
-Discord Activities run inside an iframe/webview. Large PSP titles will still be heavier than classic systems, especially on mobile. The current fullscreen button plus browser popout button are intentional escape hatches for when the embedded view is not enough.
+Discord Activities run inside an iframe/webview. GB/GBC, SNES, GBA, N64, and PS1 are the best default lane for the Activity hub. DS stays visible, but touch-heavy DS play is still best on desktop with a mouse. PSP remains browser-first and should stay framed that way in the hub.

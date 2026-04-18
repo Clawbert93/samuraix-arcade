@@ -1,0 +1,10 @@
+{
+  "name": "samuraix-arcade",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:cf": "python3 scripts/build_cloudflare_pages_bundle.py",
+    "deploy:cf": "bash scripts/deploy_cloudflare_worker.sh",
+    "dev:cf": "npx wrangler dev"
+  }
+}
