@@ -11,6 +11,17 @@ const SYSTEMS = {
     ],
     accept: '.gb,.gbc,.zip,.7z',
   },
+  snes: {
+    title: 'Super Nintendo browser player',
+    blurb: 'Upload a legal SNES ROM you own, or use the dropdown once curated games are added. SNES is another very clean fit for this free browser setup.',
+    caveat: 'SNES note: this stack supports normal SNES ROM formats cleanly in-browser, with no usual BIOS hassle.',
+    links: [
+      ['EmulatorJS SNES docs', 'https://emulatorjs.org/docs/systems/snes/'],
+      ['SNES homebrew on itch.io', 'https://itch.io/games/tag-snes'],
+      ['SNES development wiki', 'https://www.romhacking.net/?page=utilities&category=&platform=9&game=&author=&os=&level=&perpage=20&title=&desc=&utilsearch=Go'],
+    ],
+    accept: '.smc,.sfc,.fig,.swc,.zip,.7z',
+  },
   nds: {
     title: 'Nintendo DS browser player',
     blurb: 'Upload a legal .nds file or homebrew build. This is the zero-cost version, so compatibility is good-not-perfect and some titles may still want extra BIOS or firmware help.',

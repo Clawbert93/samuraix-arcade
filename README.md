@@ -5,7 +5,7 @@ Zero-cost browser arcade for the SamuraiX Discord community.
 ## What it does
 
 - Hosts a simple landing page on GitHub Pages
-- Provides GB/GBC, Nintendo DS, GBA, N64, and PS1 browser launch pages
+- Provides GB/GBC, SNES, Nintendo DS, GBA, N64, and PS1 browser launch pages
 - Uses EmulatorJS from its public CDN
 - Supports a curated per-emulator dropdown list via `data/game-library.json`
 - Does **not** host random ROM packs by default
@@ -24,6 +24,7 @@ Zero-cost browser arcade for the SamuraiX Discord community.
 Current emulator keys:
 
 - `gb`
+- `snes`
 - `nds`
 - `gba`
 - `n64`
@@ -41,5 +42,6 @@ Current emulator keys:
 - Use only legal ROMs or homebrew you are allowed to play
 - Some Nintendo DS titles may need extra BIOS/firmware help for best compatibility
 - PS1 usually wants a proper BIOS for best compatibility, and none are bundled here
+- SNES is included and is another very clean fit for this free browser setup
 - GameCube and PS2 are not included in this free build yet because browser support is still a rougher tradeoff
 - Proper account-linked save sync would require a backend and likely recurring hosting/storage

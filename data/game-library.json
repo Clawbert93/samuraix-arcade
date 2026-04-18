@@ -6,6 +6,7 @@
       "notes": "User-provided GB/GBC-compatible fan/homebrew-style build. Browser launch version uses the .gb file; the .pocket build is not used here."
     }
   ],
+  "snes": [],
   "gba": [],
   "nds": [],
   "n64": [],

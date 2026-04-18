@@ -57,6 +57,7 @@ h1, h2 { margin: 0 0 12px; }
 .three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .four-up { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .five-up { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.six-up { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .player-grid { grid-template-columns: 340px minmax(0, 1fr); align-items: start; }
 
 .button-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
@@ -140,16 +141,20 @@ select option {
 }
 .links li + li { margin-top: 10px; }
 
+@media (max-width: 1380px) {
+  .six-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 1280px) {
   .five-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1180px) {
-  .four-up, .five-up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .four-up, .five-up, .six-up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 980px) {
-  .three-up, .four-up, .five-up { grid-template-columns: 1fr; }
+  .three-up, .four-up, .five-up, .six-up { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 860px) {

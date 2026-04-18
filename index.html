@@ -12,9 +12,10 @@
     <section class="hero card">
       <p class="eyebrow">🎮 SamuraiX Arcade</p>
       <h1>Free retro corner for the SamuraiX Discord</h1>
-      <p class="lede">This zero-cost setup runs in the browser and keeps saves on each person's own device. No server bill, no ROM hosting, no shady bundle. Every emulator page now supports a curated dropdown list, so when you send me more games I can slot them in cleanly.</p>
+      <p class="lede">This zero-cost setup runs in the browser and keeps saves on each person's own device. No server bill, no ROM hosting, no shady bundle. Every emulator page supports a curated dropdown list, so when you send me more games I can slot them in cleanly.</p>
       <div class="button-row">
         <a class="button primary" href="play.html?core=gb">Open GB/GBC</a>
+        <a class="button" href="play.html?core=snes">Open SNES</a>
         <a class="button" href="play.html?core=nds">Open Nintendo DS</a>
         <a class="button" href="play.html?core=gba">Open Game Boy Advance</a>
         <a class="button" href="play.html?core=n64">Open Nintendo 64</a>
@@ -22,7 +23,7 @@
       </div>
     </section>
 
-    <section class="grid five-up">
+    <section class="grid six-up">
       <article class="card">
         <h2>Game Boy / Color</h2>
         <p>Now live, with the first curated dropdown entry already added from the file you sent.</p>
@@ -35,12 +36,23 @@
       </article>
 
       <article class="card">
+        <h2>Super Nintendo</h2>
+        <p>SNES is live too, and it’s another very clean fit for this free browser stack.</p>
+        <ul>
+          <li>Works with common SNES ROM formats</li>
+          <li>No usual BIOS headache</li>
+          <li>Curated dropdown plus manual upload support</li>
+        </ul>
+        <a class="button" href="play.html?core=snes">Launch SNES page</a>
+      </article>
+
+      <article class="card">
         <h2>Nintendo DS</h2>
         <p>Built for browser play with EmulatorJS. Upload a legal ROM you own or a homebrew ROM you are allowed to use.</p>
         <ul>
           <li>Best for quick community sessions and testing</li>
           <li>Some DS titles may need extra BIOS or firmware help</li>
-          <li>Dropdown-ready for curated additions</li>
+          <li>Curated dropdown plus manual upload support</li>
         </ul>
         <a class="button" href="play.html?core=nds">Launch DS page</a>
       </article>
@@ -51,7 +63,7 @@
         <ul>
           <li>Runs well on desktop and modern phones</li>
           <li>Saves stay in the browser on that device</li>
-          <li>Dropdown-ready for curated additions</li>
+          <li>Curated dropdown plus manual upload support</li>
         </ul>
         <a class="button" href="play.html?core=gba">Launch GBA page</a>
       </article>
@@ -62,7 +74,7 @@
         <ul>
           <li>No BIOS headache in the usual case</li>
           <li>Good fit for quick browser play</li>
-          <li>Dropdown-ready for curated additions</li>
+          <li>Curated dropdown plus manual upload support</li>
         </ul>
         <a class="button" href="play.html?core=n64">Launch N64 page</a>
       </article>
@@ -73,7 +85,7 @@
         <ul>
           <li>Works best with a proper PS1 BIOS on hand</li>
           <li>Compatible with common PS1 image formats</li>
-          <li>Dropdown-ready for curated additions</li>
+          <li>Curated dropdown plus manual upload support</li>
         </ul>
         <a class="button" href="play.html?core=psx">Launch PS1 page</a>
       </article>
@@ -85,6 +97,7 @@
         <ul class="links">
           <li><a href="https://itch.io/games/tag-game-boy" target="_blank" rel="noreferrer">itch.io Game Boy homebrew and indie releases</a></li>
           <li><a href="https://itch.io/games/tag-game-boy-color" target="_blank" rel="noreferrer">itch.io Game Boy Color homebrew and indie releases</a></li>
+          <li><a href="https://itch.io/games/tag-snes" target="_blank" rel="noreferrer">itch.io SNES homebrew and indie releases</a></li>
           <li><a href="https://itch.io/games/tag-gameboy-advance" target="_blank" rel="noreferrer">itch.io GBA homebrew and indie releases</a></li>
           <li><a href="https://itch.io/games/tag-nintendo-ds" target="_blank" rel="noreferrer">itch.io Nintendo DS homebrew and indie releases</a></li>
           <li><a href="https://www.gamebrew.org/wiki/List_of_GB_homebrew_applications" target="_blank" rel="noreferrer">GameBrew GB/GBC homebrew list</a></li>
@@ -95,7 +108,7 @@
         <h2>Important caveat</h2>
         <p>If you want proper per-user cloud save states, friendlier ROM management, or identity-linked save sync, that needs a backend. This free version stays at $0 by keeping saves local in each browser instead.</p>
         <p class="subtle">Also, because this is for Discord, account-linked save sync would be based on Discord identity, not Telegram ID.</p>
-        <p class="subtle">GameCube and PS2 are not live in this build yet. Right now, the clean free browser setup is GB/GBC, DS, GBA, N64, and PS1.</p>
+        <p class="subtle">GameCube and PS2 are not live in this build yet. Right now, the clean free browser setup is GB/GBC, SNES, DS, GBA, N64, and PS1.</p>
       </article>
     </section>
   </main>
