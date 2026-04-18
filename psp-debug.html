@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SamuraiX PSP Debug</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="card hero compact">
+      <p class="eyebrow">🛠️ PSP Debug</p>
+      <h1>PSP runtime diagnostics</h1>
+      <p class="lede">This page checks the exact browser/runtime pieces that PPSSPP-in-browser needs. If something fails here, we know the problem is environmental or runtime-level, not just a single game file.</p>
+    </section>
+    <section class="grid two-up">
+      <article class="card">
+        <h2>Environment</h2>
+        <div id="envResults" class="links"></div>
+      </article>
+      <article class="card">
+        <h2>Network checks</h2>
+        <div id="fetchResults" class="links"></div>
+      </article>
+    </section>
+  </main>
+  <script src="assets/psp-debug.js"></script>
+</body>
+</html>
