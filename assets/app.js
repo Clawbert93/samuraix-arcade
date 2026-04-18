@@ -128,17 +128,14 @@ let launched = false;
 const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
 ]);
-const CLOUD_PROXY_VERSION = 'v2';
+const CLOUD_PROXY_PREFIX = '/cloud-assets-v3';
 
 function sameOriginCloudProxyUrl(rawUrl) {
   try {
     const parsed = new URL(String(rawUrl || ''));
     const shouldProxy = window.location.hostname !== 'clawbert93.github.io' && CLOUD_PROXY_HOSTS.has(parsed.hostname);
     if (!shouldProxy) return rawUrl;
-    const params = new URLSearchParams(parsed.search);
-    params.set('proxyv', CLOUD_PROXY_VERSION);
-    const search = params.toString();
-    return `${window.location.origin}/cloud-assets${parsed.pathname}${search ? `?${search}` : ''}`;
+    return `${window.location.origin}${CLOUD_PROXY_PREFIX}${parsed.pathname}${parsed.search || ''}`;
   } catch (error) {
     return rawUrl;
   }

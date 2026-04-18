@@ -2,7 +2,7 @@ const R2_PUBLIC_BASE_URL = 'https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev'
 
 function joinTargetUrl(pathname, search, env) {
   const base = String(env.R2_PUBLIC_BASE_URL || R2_PUBLIC_BASE_URL || '').replace(/\/$/, '');
-  const suffix = pathname.replace(/^\/cloud-assets/, '');
+  const suffix = pathname.replace(/^\/cloud-assets(?:-v\d+)?/, '');
   return `${base}${suffix}${search || ''}`;
 }
 
@@ -17,7 +17,7 @@ function makeProxyHeaders(request) {
 
 async function proxyCloudAsset(request, env) {
   const url = new URL(request.url);
-  if (!url.pathname.startsWith('/cloud-assets/')) {
+  if (!/^\/cloud-assets(?:-v\d+)?\//.test(url.pathname)) {
     return new Response('Missing cloud asset path.', { status: 400 });
   }
 
@@ -28,25 +28,14 @@ async function proxyCloudAsset(request, env) {
     redirect: 'follow',
   };
 
-  if (!isRangeRequest) {
-    fetchOptions.cf = {
-      cacheEverything: true,
-      cacheTtlByStatus: {
-        '200-299': 31536000,
-        '404': 60,
-        '500-599': 0,
-      },
-    };
-  }
-
   const upstream = await fetch(joinTargetUrl(url.pathname, url.search, env), fetchOptions);
 
   const headers = new Headers(upstream.headers);
   headers.set('Cross-Origin-Resource-Policy', 'same-origin');
   headers.set('Accept-Ranges', headers.get('Accept-Ranges') || 'bytes');
   if (!isRangeRequest && upstream.status >= 200 && upstream.status < 300) {
-    headers.set('Cache-Control', headers.get('Cache-Control') || 'public, max-age=31536000, immutable');
-    headers.set('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+    headers.set('Cache-Control', headers.get('Cache-Control') || 'public, max-age=86400');
+    headers.set('CDN-Cache-Control', 'public, max-age=86400');
   }
   headers.delete('Access-Control-Allow-Origin');
   headers.delete('Access-Control-Expose-Headers');
@@ -62,7 +51,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith('/cloud-assets/')) {
+    if (/^\/cloud-assets(?:-v\d+)?\//.test(url.pathname)) {
       return proxyCloudAsset(request, env);
     }
 
