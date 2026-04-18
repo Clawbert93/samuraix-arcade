@@ -100,6 +100,7 @@ const fullscreenButtonEl = document.getElementById('fullscreenButton');
 const popoutButtonEl = document.getElementById('popoutButton');
 const statusEl = document.getElementById('launchStatus');
 const frameEl = document.getElementById('gameFrame');
+const embeddedWarningEl = document.getElementById('embeddedWarning');
 
 if (titleEl) titleEl.textContent = config.title;
 if (blurbEl) blurbEl.textContent = config.blurb;
@@ -152,6 +153,18 @@ function isExternalUrl(value) {
 
 function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
+}
+
+function syncEmbeddedWarnings() {
+  if (!embeddedWarningEl) return;
+  if (embeddedMode && core === 'psp') {
+    embeddedWarningEl.hidden = false;
+    embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. It can work, but browser popout is the recommended path for PSP until we prove a faster profile.';
+    if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser (recommended)';
+    return;
+  }
+  embeddedWarningEl.hidden = true;
+  if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
 }
 
 function syncLaunchState() {
@@ -335,7 +348,10 @@ buttonEl?.addEventListener('click', () => {
   document.body.appendChild(script);
 
   const sourceLabel = isExternalUrl(gameUrl) ? ' from cloud storage' : '';
-  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.`);
+  const embeddedPspNote = embeddedMode && core === 'psp'
+    ? ' Discord Activity adds extra proxy and webview overhead here, so browser popout will usually feel much better.'
+    : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}`);
   syncLaunchState();
 });
 
@@ -359,8 +375,12 @@ popoutButtonEl?.addEventListener('click', () => {
 
 document.addEventListener('fullscreenchange', syncFullscreenState);
 
+syncEmbeddedWarnings();
+
 loadLibrary().then(() => {
-  setStatus('Choose a curated game or upload a file to start.');
+  setStatus(embeddedMode && core === 'psp'
+    ? 'Choose a curated game or upload a file to start. PSP inside Discord is experimental, so browser popout is recommended for speed.'
+    : 'Choose a curated game or upload a file to start.');
   syncLaunchState();
   applyRequestedGame();
 });
