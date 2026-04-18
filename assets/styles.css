@@ -62,6 +62,7 @@ h1, h2 { margin: 0 0 12px; }
 .player-grid { grid-template-columns: 340px minmax(0, 1fr); align-items: start; }
 
 .button-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.controls-actions { margin-top: 10px; }
 .button {
   display: inline-flex;
   align-items: center;
@@ -123,6 +124,13 @@ select option {
   background: #030705;
   overflow: hidden;
 }
+.game-frame.is-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  border-radius: 0;
+  border: none;
+}
 .game-frame.empty {
   display: grid;
   place-items: center;
@@ -135,6 +143,9 @@ select option {
 #game {
   width: 100%;
   min-height: 720px;
+}
+.game-frame.is-fullscreen #game {
+  min-height: 100vh;
 }
 .links {
   padding-left: 18px;

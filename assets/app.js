@@ -94,6 +94,8 @@ const dropdownEl = document.getElementById('gameSelect');
 const dropdownWrapEl = document.getElementById('gameSelectWrap');
 const dropdownNotesEl = document.getElementById('gameNotes');
 const buttonEl = document.getElementById('launchButton');
+const fullscreenButtonEl = document.getElementById('fullscreenButton');
+const popoutButtonEl = document.getElementById('popoutButton');
 const statusEl = document.getElementById('launchStatus');
 const frameEl = document.getElementById('gameFrame');
 
@@ -153,6 +155,12 @@ function setStatus(text) {
 function syncLaunchState() {
   if (!buttonEl) return;
   buttonEl.disabled = !(selectedFile || selectedGame) || launched;
+  if (fullscreenButtonEl) fullscreenButtonEl.disabled = !launched;
+}
+
+function syncFullscreenState() {
+  if (!frameEl) return;
+  frameEl.classList.toggle('is-fullscreen', document.fullscreenElement === frameEl);
 }
 
 function slugifyTitle(value) {
@@ -326,7 +334,28 @@ buttonEl?.addEventListener('click', () => {
 
   const sourceLabel = isExternalUrl(gameUrl) ? ' from cloud storage' : '';
   setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.`);
+  syncLaunchState();
 });
+
+fullscreenButtonEl?.addEventListener('click', async () => {
+  if (!frameEl || !launched) return;
+  try {
+    if (document.fullscreenElement === frameEl) {
+      await document.exitFullscreen();
+    } else {
+      await frameEl.requestFullscreen();
+    }
+    syncFullscreenState();
+  } catch (error) {
+    setStatus('Fullscreen was blocked here. Use Open in browser for the cleanest full-window mode.');
+  }
+});
+
+popoutButtonEl?.addEventListener('click', () => {
+  window.open(window.location.href, '_blank', 'noopener,noreferrer');
+});
+
+document.addEventListener('fullscreenchange', syncFullscreenState);
 
 loadLibrary().then(() => {
   setStatus('Choose a curated game or upload a file to start.');

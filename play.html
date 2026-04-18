@@ -39,7 +39,11 @@
           <span>Or upload a legal ROM or homebrew file</span>
           <input id="romInput" type="file" accept=".gb,.gbc,.smc,.sfc,.fig,.swc,.nds,.gba,.z64,.n64,.v64,.cue,.bin,.img,.mdf,.pbp,.iso,.cso,.chd,.zip,.7z">
         </label>
-        <button id="launchButton" class="button primary" type="button" disabled>Launch</button>
+        <div class="button-row controls-actions">
+          <button id="launchButton" class="button primary" type="button" disabled>Launch</button>
+          <button id="fullscreenButton" class="button" type="button" disabled>Fullscreen</button>
+          <button id="popoutButton" class="button" type="button">Open in browser</button>
+        </div>
         <p class="subtle" id="launchStatus">Choose a curated game or upload a file to start.</p>
 
         <div class="note-box">
