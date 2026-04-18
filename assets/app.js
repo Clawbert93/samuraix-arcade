@@ -138,6 +138,27 @@ const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
 ]);
 const CLOUD_PROXY_PREFIX = '/cloud-assets-v3';
+const DEFAULT_PSP_OPTIONS = {
+  ejs_threads: 'enabled',
+  webgl2Enabled: 'enabled',
+  ppsspp_internal_resolution: '480x272',
+  ppsspp_frameskip: '1',
+  ppsspp_auto_frameskip: 'enabled',
+  ppsspp_frame_duplication: 'disabled',
+  ppsspp_gpu_hardware_transform: 'enabled',
+  ppsspp_software_skinning: 'enabled',
+  ppsspp_hardware_tesselation: 'disabled',
+  ppsspp_texture_scaling_level: 'disabled',
+  ppsspp_texture_deposterize: 'disabled',
+  ppsspp_texture_shader: 'disabled',
+  ppsspp_texture_anisotropic_filtering: 'disabled',
+  ppsspp_texture_filtering: 'Auto',
+  ppsspp_smart_2d_texture_filtering: 'disabled',
+  ppsspp_lazy_texture_caching: 'enabled',
+  ppsspp_spline_quality: 'Low',
+  ppsspp_lower_resolution_for_effects: 'Safe',
+  ppsspp_skip_gpu_readbacks: 'disabled',
+};
 
 function sameOriginCloudProxyUrl(rawUrl) {
   try {
@@ -199,7 +220,7 @@ function syncEmbeddedWarnings() {
     const sab = typeof window.SharedArrayBuffer === 'function';
     const isolated = window.crossOriginIsolated === true;
     pspRuntimeInfoEl.hidden = false;
-    pspRuntimeInfoEl.innerHTML = `<strong>PSP runtime check:</strong> crossOriginIsolated=${isolated}, SharedArrayBuffer=${sab}, WebGL2=${webgl2}.`;
+    pspRuntimeInfoEl.innerHTML = `<strong>PSP runtime check:</strong> crossOriginIsolated=${isolated}, SharedArrayBuffer=${sab}, WebGL2=${webgl2}. <strong>Preset:</strong> browser-performance defaults active.`;
   } else if (pspRuntimeInfoEl) {
     pspRuntimeInfoEl.hidden = true;
   }
@@ -401,6 +422,7 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_color = '#2dd46f';
   window.EJS_backgroundColor = '#07110a';
   window.EJS_threads = core === 'psp';
+  window.EJS_defaultOptions = core === 'psp' ? DEFAULT_PSP_OPTIONS : undefined;
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
 
@@ -414,7 +436,10 @@ buttonEl?.addEventListener('click', () => {
   const embeddedPspNote = embeddedMode && core === 'psp'
     ? ' Discord Activity adds extra proxy and webview overhead here, so browser popout will usually feel much better.'
     : '';
-  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}`);
+  const pspPresetNote = core === 'psp'
+    ? ' PSP browser-performance defaults are active: 1x render resolution, lighter filtering, lower curve quality, lazy texture caching, and capped auto-frameskip.'
+    : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}`);
   syncLaunchState();
 });
 
