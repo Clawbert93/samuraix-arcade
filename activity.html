@@ -10,20 +10,20 @@
 <body class="activity-body">
   <main class="shell activity-shell">
     <section class="card hero compact activity-hero">
-      <p class="eyebrow">🎮 Discord Activity Preview</p>
+      <p class="eyebrow">🎮 Discord Activity</p>
       <h1>SamuraiX Arcade Party Room</h1>
-      <p class="lede" id="activityStatus">Bootstrapping the Discord Activity shell. If this page is launched outside Discord, it still works as a clean preview layer.</p>
-      <div class="button-row">
-        <a class="button primary" href="play.html?core=psx&embedded=1">Open PS1 shelf</a>
-        <a class="button" href="play.html?core=nds&embedded=1">Open DS shelf</a>
-        <a class="button" href="play.html?core=psp" target="_blank" rel="noreferrer">Open PSP in browser</a>
+      <p class="lede" id="activityStatus">Loading the in-Discord game hub. If this page opens outside Discord, it still works as a clean browser preview.</p>
+      <div class="button-row" id="activityHeroActions">
+        <a class="button primary" href="play.html?core=psx&embedded=1&activity=1">Open PS1 shelf</a>
+        <a class="button" href="play.html?core=nds&embedded=1&activity=1">Open DS shelf</a>
+        <a class="button" href="play.html?core=gba&embedded=1&activity=1">Open GBA shelf</a>
         <a class="button" href="index.html">Main arcade</a>
       </div>
     </section>
 
     <section class="grid activity-grid">
       <article class="card">
-        <h2>Activity state</h2>
+        <h2>Room state</h2>
         <div class="note-box">
           <strong>Discord detected:</strong> <span id="discordDetected">Checking…</span>
         </div>
@@ -31,20 +31,61 @@
           <strong>SDK auth:</strong> <span id="discordAuthState">Waiting…</span>
         </div>
         <div class="note-box">
-          <strong>Fullscreen behavior:</strong> Activity mode will try to keep the game clean inside Discord first, then let players pop out to the browser if they want the largest canvas.
+          <strong>Live shelf count:</strong> <span id="libraryStats">Loading curated systems and games…</span>
+        </div>
+        <div class="note-box">
+          <strong>In-Discord lane:</strong> GB/GBC, SNES, GBA, N64, and PS1 are the cleanest Activity fits. DS stays visible, but touch-heavy games are still better on desktop with a mouse.
         </div>
         <div class="note-box warning-box">
-          <strong>PSP policy:</strong> PSP is browser-first here. Lighter systems stay in Discord, but heavy PSP titles should not pretend to be a smooth embedded Activity experience.
+          <strong>PSP policy:</strong> PSP stays browser-first. It is still janky enough that the Activity hub should steer people to the browser instead of pretending Discord is the best place to run it.
         </div>
       </article>
 
       <article class="card">
-        <h2>Quick launch lane</h2>
-        <div class="button-row stacked-buttons">
-          <a class="button primary" href="play.html?core=psx&game=crash-bandicoot&launch=1&embedded=1">Crash Bandicoot</a>
-          <a class="button" href="play.html?core=nds&game=pokemon-heartgold-version&launch=1&embedded=1">Pokémon HeartGold</a>
-          <a class="button" href="play.html?core=psp&game=kingdom-hearts-birth-by-sleep-final-mix-english-patched&launch=1" target="_blank" rel="noreferrer">Kingdom Hearts BBS (browser-first)</a>
-          <a class="button" href="play.html?core=psp&game=grand-theft-auto-vice-city-stories&launch=1" target="_blank" rel="noreferrer">GTA Vice City Stories (browser-first)</a>
+        <h2>Featured launch lane</h2>
+        <div class="activity-launch-list" id="featuredLaunches">
+          <p class="subtle">Loading featured games…</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="card activity-section">
+      <div class="activity-section-head">
+        <div>
+          <p class="eyebrow">🕹️ Shelves</p>
+          <h2>Pick a system inside Discord</h2>
+        </div>
+        <p class="subtle">Each shelf opens the embedded player with the curated dropdown ready. PSP is split out below as browser-first.</p>
+      </div>
+      <div class="activity-system-grid" id="systemShelfGrid">
+        <p class="subtle">Loading system shelves…</p>
+      </div>
+    </section>
+
+    <section class="grid activity-grid">
+      <article class="card activity-section">
+        <div class="activity-section-head">
+          <div>
+            <p class="eyebrow">✨ Quick picks</p>
+            <h2>Best bets for Activity mode</h2>
+          </div>
+          <p class="subtle">These are the lighter or cleaner launches to start with in the Discord room.</p>
+        </div>
+        <div class="activity-game-grid" id="activityBestBets">
+          <p class="subtle">Loading best bets…</p>
+        </div>
+      </article>
+
+      <article class="card activity-section">
+        <div class="activity-section-head">
+          <div>
+            <p class="eyebrow">🌐 Browser-first</p>
+            <h2>Heavy lane and escape hatches</h2>
+          </div>
+          <p class="subtle">Use these when someone wants the big stuff or when Discord's webview starts feeling cramped.</p>
+        </div>
+        <div class="activity-game-grid" id="browserFirstLane">
+          <p class="subtle">Loading browser-first picks…</p>
         </div>
       </article>
     </section>
