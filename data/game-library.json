@@ -325,6 +325,36 @@
       "title": "Assassin's Creed: Bloodlines",
       "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Assassins_Creed_Bloodlines.zip",
       "notes": "Large externally hosted asset. Source upload: Assassins_Creed__Bloodlines.zip. .cso if clean conversion is available, otherwise keep archive"
+    },
+    {
+      "title": "Dante's Inferno",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Dantes_Inferno.zip",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2."
+    },
+    {
+      "title": "God of War: Chains of Olympus",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/God_of_War_Chains_of_Olympus.7z",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2."
+    },
+    {
+      "title": "Grand Theft Auto: Vice City Stories",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Vice_City_Stories.zip",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2."
+    },
+    {
+      "title": "Naruto Shippuden: Ultimate Ninja Impact",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Impact.7z",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2."
+    },
+    {
+      "title": "Naruto Shippuden: Ultimate Ninja Heroes 3",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Naruto_Shippuden_Ultimate_Ninja_Heroes_3.zip",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2."
+    },
+    {
+      "title": "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Kingdom_Hearts_Birth_by_Sleep_Final_Mix_English_Patched.iso",
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. User-reported as the already-patched English build."
     }
   ]
 }
