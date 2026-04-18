@@ -22,7 +22,13 @@
     }
   ],
   "snes": [],
-  "gba": [],
+  "gba": [
+    {
+      "title": "Pokemon Glazed 7B",
+      "file": "games/gba/Pokemon_Glazed_7B.gba",
+      "notes": "User-provided GBA ROM added to the curated GBA dropdown. The extra .url file from the zip was ignored."
+    }
+  ],
   "nds": [
     {
       "title": "New Super Mario Bros. (USA)",
