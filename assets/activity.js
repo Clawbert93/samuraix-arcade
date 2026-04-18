@@ -46,6 +46,14 @@ function setText(el, value) {
   if (el) el.textContent = value;
 }
 
+function isEmbeddedContext() {
+  try {
+    return window.self !== window.top;
+  } catch (error) {
+    return true;
+  }
+}
+
 function slugifyTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -60,7 +68,7 @@ function buildPlayerHref(core, options = {}) {
   if (options.launch) params.set('launch', '1');
   if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
   if (options.activity !== false && core !== 'psp') params.set('activity', '1');
-  return `play.html?${params.toString()}`;
+  return `/play?${params.toString()}`;
 }
 
 function createTile({ title, body, badges = [], actions = [] }) {
@@ -132,7 +140,7 @@ function renderLibrary(library) {
     if (meta.warning) badges.push({ label: 'Heads up', warning: true });
     const actions = meta.browserFirst
       ? [
-          { label: `Open ${meta.label} in browser`, href: `play.html?core=${core}`, primary: true, external: true },
+          { label: `Open ${meta.label} in browser`, href: `/play?core=${core}`, primary: true, external: true },
         ]
       : [
           { label: `Open ${meta.label} shelf`, href: buildPlayerHref(core, { embedded: true, activity: true }), primary: true },
@@ -194,7 +202,7 @@ function renderLibrary(library) {
       ],
       actions: [
         { label: 'Open in browser', href: buildPlayerHref(core, { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true },
-        { label: `Open ${meta.label} shelf`, href: `play.html?core=${core}`, external: true },
+        { label: `Open ${meta.label} shelf`, href: `/play?core=${core}`, external: true },
       ],
     }));
   });
@@ -203,7 +211,7 @@ function renderLibrary(library) {
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
-  const insideDiscord = window.location !== window.parent.location || params.get('discord') === '1';
+  const insideDiscord = isEmbeddedContext() || params.get('discord') === '1';
   const sdkImportUrl = insideDiscord ? '/esm/@discord/embedded-app-sdk' : 'https://esm.sh/@discord/embedded-app-sdk';
   setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
 
