@@ -103,6 +103,9 @@ const inputEl = document.getElementById('romInput');
 const dropdownEl = document.getElementById('gameSelect');
 const dropdownWrapEl = document.getElementById('gameSelectWrap');
 const dropdownNotesEl = document.getElementById('gameNotes');
+const pspPresetWrapEl = document.getElementById('pspPresetWrap');
+const pspPresetEl = document.getElementById('pspPreset');
+const pspPresetNotesEl = document.getElementById('pspPresetNotes');
 const buttonEl = document.getElementById('launchButton');
 const fullscreenButtonEl = document.getElementById('fullscreenButton');
 const popoutButtonEl = document.getElementById('popoutButton');
@@ -138,27 +141,59 @@ const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
 ]);
 const CLOUD_PROXY_PREFIX = '/cloud-assets-v3';
-const DEFAULT_PSP_OPTIONS = {
-  ejs_threads: 'enabled',
-  webgl2Enabled: 'enabled',
-  ppsspp_internal_resolution: '480x272',
-  ppsspp_frameskip: '1',
-  ppsspp_auto_frameskip: 'enabled',
-  ppsspp_frame_duplication: 'disabled',
-  ppsspp_gpu_hardware_transform: 'enabled',
-  ppsspp_software_skinning: 'enabled',
-  ppsspp_hardware_tesselation: 'disabled',
-  ppsspp_texture_scaling_level: 'disabled',
-  ppsspp_texture_deposterize: 'disabled',
-  ppsspp_texture_shader: 'disabled',
-  ppsspp_texture_anisotropic_filtering: 'disabled',
-  ppsspp_texture_filtering: 'Auto',
-  ppsspp_smart_2d_texture_filtering: 'disabled',
-  ppsspp_lazy_texture_caching: 'enabled',
-  ppsspp_spline_quality: 'Low',
-  ppsspp_lower_resolution_for_effects: 'Safe',
-  ppsspp_skip_gpu_readbacks: 'disabled',
+const PSP_PRESETS = {
+  quality: {
+    label: 'quality',
+    note: 'Sharper and cleaner, but slower. Better for lighter PSP games on stronger desktops.',
+    options: {
+      ejs_threads: 'enabled',
+      webgl2Enabled: 'enabled',
+      ppsspp_internal_resolution: '480x272',
+      ppsspp_frameskip: 'disabled',
+      ppsspp_auto_frameskip: 'disabled',
+      ppsspp_frame_duplication: 'enabled',
+      ppsspp_gpu_hardware_transform: 'enabled',
+      ppsspp_software_skinning: 'enabled',
+      ppsspp_hardware_tesselation: 'disabled',
+      ppsspp_texture_scaling_level: 'disabled',
+      ppsspp_texture_deposterize: 'disabled',
+      ppsspp_texture_shader: 'disabled',
+      ppsspp_texture_anisotropic_filtering: '2x',
+      ppsspp_texture_filtering: 'Auto',
+      ppsspp_smart_2d_texture_filtering: 'disabled',
+      ppsspp_lazy_texture_caching: 'disabled',
+      ppsspp_spline_quality: 'Medium',
+      ppsspp_lower_resolution_for_effects: 'disabled',
+      ppsspp_skip_gpu_readbacks: 'disabled',
+    },
+  },
+  'max-performance': {
+    label: 'max performance',
+    note: 'Most aggressive browser preset. Lower visual quality, more frameskip, and riskier speed hacks for the best shot at playable PSP.',
+    options: {
+      ejs_threads: 'enabled',
+      webgl2Enabled: 'enabled',
+      ppsspp_internal_resolution: '480x272',
+      ppsspp_frameskip: '2',
+      ppsspp_auto_frameskip: 'enabled',
+      ppsspp_frame_duplication: 'disabled',
+      ppsspp_gpu_hardware_transform: 'enabled',
+      ppsspp_software_skinning: 'enabled',
+      ppsspp_hardware_tesselation: 'disabled',
+      ppsspp_texture_scaling_level: 'disabled',
+      ppsspp_texture_deposterize: 'disabled',
+      ppsspp_texture_shader: 'disabled',
+      ppsspp_texture_anisotropic_filtering: 'disabled',
+      ppsspp_texture_filtering: 'Nearest',
+      ppsspp_smart_2d_texture_filtering: 'disabled',
+      ppsspp_lazy_texture_caching: 'enabled',
+      ppsspp_spline_quality: 'Low',
+      ppsspp_lower_resolution_for_effects: 'Aggressive',
+      ppsspp_skip_gpu_readbacks: 'enabled',
+    },
+  },
 };
+const PSP_PRESET_KEYS = Object.keys(PSP_PRESETS);
 
 function sameOriginCloudProxyUrl(rawUrl) {
   try {
@@ -201,6 +236,57 @@ function setStatus(text) {
   if (statusEl) statusEl.textContent = text;
 }
 
+function getPspPresetKey() {
+  const selected = String(pspPresetEl?.value || 'max-performance');
+  return PSP_PRESET_KEYS.includes(selected) ? selected : 'max-performance';
+}
+
+function getPspPreset() {
+  return PSP_PRESETS[getPspPresetKey()];
+}
+
+function isUnsupportedArchiveForCore(url, activeCore = core) {
+  return activeCore === 'psp' && /\.rar(?:$|[?#])/i.test(String(url || ''));
+}
+
+function getUnsupportedArchiveMessage(url, activeCore = core) {
+  if (!isUnsupportedArchiveForCore(url, activeCore)) return '';
+  return 'This PSP entry is still packaged as a .rar archive. EmulatorJS boots to the menu instead of the game for that format here, so I need to repack it to .iso, .cso, .zip, or .7z.';
+}
+
+function getPspStorageKey(gameUrl, gameName) {
+  let identifier = '1-psp';
+  if (typeof gameName === 'string' && gameName) {
+    identifier += `-${gameName}`;
+  } else if (typeof gameUrl === 'string' && gameUrl !== 'game' && !gameUrl.startsWith('blob:')) {
+    identifier += `-${gameUrl}`;
+  }
+  return `ejs-${identifier}-settings`;
+}
+
+function applyPspPresetToStorage(gameUrl, gameName, preset) {
+  if (!window.localStorage || !preset?.options) return;
+  const storageKey = getPspStorageKey(gameUrl, gameName);
+  let existing = { controlSettings: {}, settings: {}, cheats: [] };
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    if (parsed && typeof parsed === 'object') existing = { ...existing, ...parsed };
+  } catch (error) {}
+  existing.settings = { ...(existing.settings || {}), ...preset.options };
+  if (!Array.isArray(existing.cheats)) existing.cheats = [];
+  if (!existing.controlSettings || typeof existing.controlSettings !== 'object') existing.controlSettings = {};
+  localStorage.setItem(storageKey, JSON.stringify(existing));
+}
+
+function syncPspPresetUi() {
+  const show = core === 'psp';
+  if (pspPresetWrapEl) pspPresetWrapEl.hidden = !show;
+  if (pspPresetNotesEl) {
+    pspPresetNotesEl.hidden = !show;
+    if (show) pspPresetNotesEl.textContent = getPspPreset().note;
+  }
+}
+
 function syncEmbeddedWarnings() {
   if (embeddedWarningEl) {
     if (embeddedMode && core === 'psp') {
@@ -220,7 +306,7 @@ function syncEmbeddedWarnings() {
     const sab = typeof window.SharedArrayBuffer === 'function';
     const isolated = window.crossOriginIsolated === true;
     pspRuntimeInfoEl.hidden = false;
-    pspRuntimeInfoEl.innerHTML = `<strong>PSP runtime check:</strong> crossOriginIsolated=${isolated}, SharedArrayBuffer=${sab}, WebGL2=${webgl2}. <strong>Preset:</strong> browser-performance defaults active.`;
+    pspRuntimeInfoEl.innerHTML = `<strong>PSP runtime check:</strong> crossOriginIsolated=${isolated}, SharedArrayBuffer=${sab}, WebGL2=${webgl2}. <strong>Preset:</strong> ${getPspPreset().label}.`;
   } else if (pspRuntimeInfoEl) {
     pspRuntimeInfoEl.hidden = true;
   }
@@ -273,7 +359,8 @@ function setSelectedGame(chosen) {
       const tierNote = tierLabel
         ? `Web status: ${tierLabel}.`
         : null;
-      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote]
+      const archiveWarning = getUnsupportedArchiveMessage(resolveEntryUrl(selectedGame));
+      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote, archiveWarning]
         .filter(Boolean)
         .join(' ');
     }
@@ -409,6 +496,16 @@ buttonEl?.addEventListener('click', () => {
     return;
   }
 
+  const unsupportedArchiveMessage = getUnsupportedArchiveMessage(gameUrl);
+  if (unsupportedArchiveMessage) {
+    setStatus(unsupportedArchiveMessage);
+    launched = false;
+    if (buttonEl) buttonEl.disabled = false;
+    if (inputEl) inputEl.disabled = false;
+    if (dropdownEl) dropdownEl.disabled = false;
+    return;
+  }
+
   frameEl.classList.remove('empty');
   frameEl.innerHTML = '<div id="game"></div>';
 
@@ -417,12 +514,15 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_gameUrl = gameUrl;
   window.EJS_gameName = gameName;
   window.EJS_pathtodata = emulatorDataBase;
+  const pspPreset = core === 'psp' ? getPspPreset() : null;
+  if (pspPreset) applyPspPresetToStorage(gameUrl, gameName, pspPreset);
+
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.8;
   window.EJS_color = '#2dd46f';
   window.EJS_backgroundColor = '#07110a';
   window.EJS_threads = core === 'psp';
-  window.EJS_defaultOptions = core === 'psp' ? DEFAULT_PSP_OPTIONS : undefined;
+  window.EJS_defaultOptions = pspPreset ? pspPreset.options : undefined;
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
 
@@ -437,7 +537,7 @@ buttonEl?.addEventListener('click', () => {
     ? ' Discord Activity adds extra proxy and webview overhead here, so browser popout will usually feel much better.'
     : '';
   const pspPresetNote = core === 'psp'
-    ? ' PSP browser-performance defaults are active: 1x render resolution, lighter filtering, lower curve quality, lazy texture caching, and capped auto-frameskip.'
+    ? ` PSP preset active: ${getPspPreset().label}.`
     : '';
   setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}`);
   syncLaunchState();
@@ -463,6 +563,15 @@ popoutButtonEl?.addEventListener('click', () => {
 
 document.addEventListener('fullscreenchange', syncFullscreenState);
 
+pspPresetEl?.addEventListener('change', () => {
+  syncPspPresetUi();
+  syncEmbeddedWarnings();
+  if (core === 'psp' && selectedGame) {
+    setSelectedGame(selectedGame);
+  }
+});
+
+syncPspPresetUi();
 syncEmbeddedWarnings();
 
 loadLibrary().then(() => {

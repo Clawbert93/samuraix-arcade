@@ -41,6 +41,15 @@
         </label>
         <p class="subtle" id="gameNotes"></p>
 
+        <label class="field" id="pspPresetWrap" hidden>
+          <span>PSP launch mode</span>
+          <select id="pspPreset">
+            <option value="quality">Quality</option>
+            <option value="max-performance" selected>Max performance</option>
+          </select>
+        </label>
+        <p class="subtle" id="pspPresetNotes" hidden></p>
+
         <label class="field">
           <span>Or upload a legal ROM or homebrew file</span>
           <input id="romInput" type="file" accept=".gb,.gbc,.smc,.sfc,.fig,.swc,.nds,.gba,.z64,.n64,.v64,.cue,.bin,.img,.mdf,.pbp,.iso,.cso,.chd,.zip,.7z">
