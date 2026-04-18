@@ -40,11 +40,13 @@ The repo includes a simple live deploy helper now:
 
 ```bash
 cd /home/robert/OpenClawProjects/samuraix-arcade
-export CLOUDFLARE_API_TOKEN=your_token_here
+npx wrangler login
 npm run deploy:cf
 ```
 
 That script rebuilds `dist/` and runs `npx wrangler deploy`.
+
+If you prefer token-based auth, it will also use `CLOUDFLARE_API_TOKEN` when that variable is set.
 
 ## Important reality check
 

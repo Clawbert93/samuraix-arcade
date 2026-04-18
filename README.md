@@ -112,6 +112,14 @@ One-time or ad hoc deploy flow:
 
 ```bash
 cd /home/robert/OpenClawProjects/samuraix-arcade
+npx wrangler login
+npm run deploy:cf
+```
+
+Or, if you intentionally want token-based auth:
+
+```bash
+cd /home/robert/OpenClawProjects/samuraix-arcade
 export CLOUDFLARE_API_TOKEN=your_token_here
 npm run deploy:cf
 ```
@@ -127,7 +135,7 @@ Useful commands:
 - `npm run deploy:cf` -> build then deploy
 - `npm run dev:cf` -> local Wrangler dev session
 
-If `CLOUDFLARE_API_TOKEN` is missing, the helper stops early and prints the exact export command shape instead of failing deep inside Wrangler.
+If `CLOUDFLARE_API_TOKEN` is missing, the helper now falls back to Wrangler's local OAuth login instead of forcing token-based auth.
 
 ## Same-origin cloud asset delivery
 
