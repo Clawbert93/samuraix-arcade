@@ -24,8 +24,8 @@ const SYSTEMS = {
   },
   nds: {
     title: 'Nintendo DS browser player',
-    blurb: 'Upload a legal .nds file or homebrew build. This is the zero-cost version, so compatibility is good-not-perfect and some titles may still want extra BIOS or firmware help.',
-    caveat: 'DS note: some titles may need extra BIOS or firmware for best compatibility. This page stays legal by not bundling any of that.',
+    blurb: 'Upload a legal .nds file or homebrew build. On phones and tablets this page now prefers a safer DS fallback path because recent EmulatorJS mobile touch behavior has been flaky.',
+    caveat: 'DS note: some titles may need extra BIOS or firmware for best compatibility. On touch devices this page now favors reliability over speed so stylus controls have a better shot at working.',
     links: [
       ['Nintendo DS homebrew on itch.io', 'https://itch.io/games/tag-nintendo-ds'],
       ['DS-Homebrew wiki', 'https://wiki.ds-homebrew.com/'],
@@ -68,8 +68,8 @@ const SYSTEMS = {
   },
   psp: {
     title: 'PlayStation Portable browser player',
-    blurb: 'Upload a legal PSP game you own, or use the dropdown once curated games are added. PSP works in this browser stack, but it is a heavier target than the older consoles here.',
-    caveat: 'PSP note: this is heavier than the other retro systems and Safari is not a good target for it. Desktop Chromium-type browsers are the safer bet.',
+    blurb: 'Upload a legal PSP game you own, or use the dropdown once curated games are added. PSP is experimental here and currently unreliable enough that many games will run badly or fail outright.',
+    caveat: 'PSP note: expect poor performance, broken input, black screens, and some games not booting yet. Older systems are the safer choice until a better fix exists.',
     links: [
       ['EmulatorJS PSP docs', 'https://emulatorjs.org/docs/systems/psp/'],
       ['EmulatorJS changelog note for PSP support', 'https://emulatorjs.org/docs/news/'],
@@ -93,7 +93,8 @@ if (core === 'psp' && window.location.hostname === 'clawbert93.github.io') {
 const autoLaunchRequested = ['1', 'true', 'yes'].includes(String(params.get('launch') || params.get('autostart') || '').trim().toLowerCase());
 const config = SYSTEMS[core];
 const embeddedMode = params.get('embedded') === '1';
-const emulatorDataBase = embeddedMode ? '/emu/stable/data/' : 'https://cdn.emulatorjs.org/stable/data/';
+const defaultEmulatorDataBase = embeddedMode ? '/emu/stable/data/' : 'https://cdn.emulatorjs.org/stable/data/';
+const ndsMobileEmulatorDataBase = embeddedMode ? defaultEmulatorDataBase : 'https://cdn.emulatorjs.org/4.0.9/data/';
 
 const titleEl = document.getElementById('systemTitle');
 const blurbEl = document.getElementById('systemBlurb');
@@ -286,73 +287,25 @@ function installKeyboardFocusBridge() {
   });
 }
 
+function isLikelyTouchDevice() {
+  try {
+    if (window.matchMedia?.('(pointer: coarse)').matches) return true;
+  } catch (error) {}
+  return Number(navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window;
+}
+
+function getRuntimeCore() {
+  if (core === 'nds' && isLikelyTouchDevice()) return 'desmume';
+  return core;
+}
+
+function getRuntimeDataBase() {
+  if (core === 'nds' && isLikelyTouchDevice()) return ndsMobileEmulatorDataBase;
+  return defaultEmulatorDataBase;
+}
+
 function installNdsTouchBridge() {
-  if (!frameEl || core !== 'nds' || frameEl.dataset.ndsTouchBridgeInstalled === '1') return;
-  frameEl.dataset.ndsTouchBridgeInstalled = '1';
-  frameEl.style.touchAction = 'none';
-
-  const dispatchPointerLikeEvents = (type, touch) => {
-    const canvasTarget = frameEl.querySelector('canvas') || frameEl.querySelector('#game');
-    const pointTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-    const targets = [pointTarget, canvasTarget, frameEl].filter((value, index, array) => value instanceof EventTarget && array.indexOf(value) === index);
-    const buttons = type === 'pointerup' || type === 'mouseup' || type === 'click' ? 0 : 1;
-
-    for (const target of targets) {
-      if (typeof PointerEvent === 'function' && type.startsWith('pointer')) {
-        target.dispatchEvent(new PointerEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          pointerId: 1,
-          pointerType: 'touch',
-          isPrimary: true,
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          screenX: touch.screenX,
-          screenY: touch.screenY,
-          button: 0,
-          buttons,
-        }));
-      } else {
-        const mouseType = type.replace('pointer', 'mouse');
-        target.dispatchEvent(new MouseEvent(mouseType, {
-          bubbles: true,
-          cancelable: true,
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          screenX: touch.screenX,
-          screenY: touch.screenY,
-          button: 0,
-          buttons,
-        }));
-      }
-    }
-  };
-
-  const touchHandler = (phase) => (event) => {
-    if (!launched) return;
-    const touch = event.changedTouches?.[0];
-    if (!touch) return;
-    focusGameTarget();
-    if (phase === 'start') {
-      dispatchPointerLikeEvents('pointermove', touch);
-      dispatchPointerLikeEvents('pointerdown', touch);
-      dispatchPointerLikeEvents('mousedown', touch);
-    } else if (phase === 'move') {
-      dispatchPointerLikeEvents('pointermove', touch);
-      dispatchPointerLikeEvents('mousemove', touch);
-    } else {
-      dispatchPointerLikeEvents('pointerup', touch);
-      dispatchPointerLikeEvents('mouseup', touch);
-      dispatchPointerLikeEvents('click', touch);
-    }
-    event.preventDefault();
-    event.stopPropagation();
-  };
-
-  frameEl.addEventListener('touchstart', touchHandler('start'), { capture: true, passive: false });
-  frameEl.addEventListener('touchmove', touchHandler('move'), { capture: true, passive: false });
-  frameEl.addEventListener('touchend', touchHandler('end'), { capture: true, passive: false });
-  frameEl.addEventListener('touchcancel', touchHandler('end'), { capture: true, passive: false });
+  return;
 }
 
 function getPspPresetKey() {
@@ -408,9 +361,14 @@ function syncPspPresetUi() {
 
 function syncEmbeddedWarnings() {
   if (embeddedWarningEl) {
-    if (embeddedMode && core === 'psp') {
+    if (core === 'psp') {
       embeddedWarningEl.hidden = false;
-      embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. Launch now routes browser-first instead of pretending the embedded path is the best option.';
+      embeddedWarningEl.innerHTML = embeddedMode
+        ? '<strong>PSP status:</strong> experimental and currently unreliable. In Discord/webviews it is even worse, expect bad performance, broken input, black screens, and failed boots. Browser popout is still only a maybe, not a promise.'
+        : '<strong>PSP status:</strong> experimental and currently unreliable. Expect bad performance, broken input, black screens, and some games failing to boot. We are keeping it visible for testing, but it is not a dependable mode yet.';
+    } else if (embeddedMode) {
+      embeddedWarningEl.hidden = false;
+      embeddedWarningEl.innerHTML = '<strong>Embedded mode:</strong> if controls feel weird in a webview, use Open in browser for the cleanest version.';
     } else {
       embeddedWarningEl.hidden = true;
     }
@@ -436,7 +394,7 @@ function syncEmbeddedWarnings() {
     return;
   }
   if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
-  if (buttonEl) buttonEl.textContent = 'Launch';
+  if (buttonEl) buttonEl.textContent = core === 'psp' ? 'Attempt launch (experimental)' : 'Launch';
 }
 
 function syncLaunchState() {
@@ -479,7 +437,10 @@ function setSelectedGame(chosen) {
         ? `Web status: ${tierLabel}.`
         : null;
       const archiveWarning = getUnsupportedArchiveMessage(resolveEntryUrl(selectedGame));
-      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote, archiveWarning]
+      const dsTouchNote = core === 'nds' && isLikelyTouchDevice()
+        ? 'Touch device detected, so DS launches use the safer DeSmuME fallback plus an older EmulatorJS data build for better stylus odds.'
+        : null;
+      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote, archiveWarning, dsTouchNote]
         .filter(Boolean)
         .join(' ');
     }
@@ -628,11 +589,14 @@ buttonEl?.addEventListener('click', () => {
   frameEl.classList.remove('empty');
   frameEl.innerHTML = '<div id="game"></div>';
 
+  const runtimeCore = getRuntimeCore();
+  const runtimeDataBase = getRuntimeDataBase();
+
   window.EJS_player = '#game';
-  window.EJS_core = core;
+  window.EJS_core = runtimeCore;
   window.EJS_gameUrl = gameUrl;
   window.EJS_gameName = gameName;
-  window.EJS_pathtodata = emulatorDataBase;
+  window.EJS_pathtodata = runtimeDataBase;
   const pspPreset = core === 'psp' ? getPspPreset() : null;
   if (pspPreset) applyPspPresetToStorage(gameUrl, gameName, pspPreset);
 
@@ -644,9 +608,10 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_defaultOptions = pspPreset ? pspPreset.options : undefined;
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
+  window.EJS_controlScheme = core === 'nds' ? 'nds' : undefined;
 
   const script = document.createElement('script');
-  script.src = `${emulatorDataBase}loader.js`;
+  script.src = `${runtimeDataBase}loader.js`;
   script.crossOrigin = 'anonymous';
   script.async = true;
   script.addEventListener('load', () => {
@@ -664,7 +629,10 @@ buttonEl?.addEventListener('click', () => {
   const pspPresetNote = core === 'psp'
     ? ` PSP preset active: ${getPspPreset().label}.`
     : '';
-  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}`);
+  const ndsTouchFallbackNote = core === 'nds' && isLikelyTouchDevice()
+    ? ' Touch device detected, so this DS launch is using the safer DeSmuME fallback and a pinned EmulatorJS build for better stylus compatibility.'
+    : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}`);
   syncLaunchState();
 });
 
@@ -701,9 +669,13 @@ syncPspPresetUi();
 syncEmbeddedWarnings();
 
 loadLibrary().then(() => {
-  setStatus(embeddedMode && core === 'psp'
-    ? 'Choose a curated game or upload a file to start. PSP inside Discord is experimental, so browser popout is recommended for speed.'
-    : 'Choose a curated game or upload a file to start.');
+  setStatus(core === 'psp'
+    ? (embeddedMode
+      ? 'Choose a curated game or upload a file to start. PSP inside Discord is experimental and unreliable, so browser popout is recommended if you insist on testing it.'
+      : 'Choose a curated game or upload a file to start. PSP is experimental and unreliable right now, so expect failures.')
+    : (core === 'nds' && isLikelyTouchDevice()
+      ? 'Choose a curated game or upload a file to start. On touch devices DS now uses a safer fallback path for better stylus odds.'
+      : 'Choose a curated game or upload a file to start.'));
   syncLaunchState();
   applyRequestedGame();
 });
