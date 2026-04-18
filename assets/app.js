@@ -305,6 +305,7 @@ buttonEl?.addEventListener('click', () => {
 
   const script = document.createElement('script');
   script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+  script.crossOrigin = 'anonymous';
   script.async = true;
   document.body.appendChild(script);
 
