@@ -14,6 +14,11 @@
       "title": "Capybara Village Update 1",
       "file": "games/gb/Capybara_Village_Update1.gbc",
       "notes": "User-provided Game Boy Color ROM, detected as CGB-only, added to the curated GB/GBC dropdown."
+    },
+    {
+      "title": "Sushi Gun v2.0",
+      "file": "games/gb/Sushi_Gun_v2_0.gb",
+      "notes": "User-provided file arrived with an .mp3 extension, but was identified as a Game Boy ROM and added to the curated GB/GBC dropdown."
     }
   ],
   "snes": [],
