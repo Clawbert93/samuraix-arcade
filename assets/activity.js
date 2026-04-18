@@ -10,6 +10,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const clientId = params.get('client_id') || '';
   const insideDiscord = window.location !== window.parent.location || params.get('discord') === '1';
+  const sdkImportUrl = insideDiscord ? '/esm/@discord/embedded-app-sdk' : 'https://esm.sh/@discord/embedded-app-sdk';
   setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
 
   if (!clientId) {
@@ -19,7 +20,7 @@ async function init() {
   }
 
   try {
-    const { DiscordSDK } = await import('https://esm.sh/@discord/embedded-app-sdk');
+    const { DiscordSDK } = await import(sdkImportUrl);
     const discordSdk = new DiscordSDK(clientId);
     await discordSdk.ready();
     setText(discordAuthStateEl, 'Discord SDK connected.');

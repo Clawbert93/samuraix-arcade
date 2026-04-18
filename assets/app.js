@@ -84,6 +84,8 @@ const core = SYSTEMS[params.get('core')] ? params.get('core') : 'gb';
 const requestedGameKey = String(params.get('game') || '').trim().toLowerCase();
 const autoLaunchRequested = ['1', 'true', 'yes'].includes(String(params.get('launch') || params.get('autostart') || '').trim().toLowerCase());
 const config = SYSTEMS[core];
+const embeddedMode = params.get('embedded') === '1';
+const emulatorDataBase = embeddedMode ? '/emu/stable/data/' : 'https://cdn.emulatorjs.org/stable/data/';
 
 const titleEl = document.getElementById('systemTitle');
 const blurbEl = document.getElementById('systemBlurb');
@@ -317,7 +319,7 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_core = core;
   window.EJS_gameUrl = gameUrl;
   window.EJS_gameName = gameName;
-  window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+  window.EJS_pathtodata = emulatorDataBase;
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.8;
   window.EJS_color = '#2dd46f';
@@ -327,7 +329,7 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
 
   const script = document.createElement('script');
-  script.src = 'https://cdn.emulatorjs.org/stable/data/loader.js';
+  script.src = `${emulatorDataBase}loader.js`;
   script.crossOrigin = 'anonymous';
   script.async = true;
   document.body.appendChild(script);
