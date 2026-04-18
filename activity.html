@@ -14,9 +14,9 @@
       <h1>SamuraiX Arcade Party Room</h1>
       <p class="lede" id="activityStatus">Bootstrapping the Discord Activity shell. If this page is launched outside Discord, it still works as a clean preview layer.</p>
       <div class="button-row">
-        <a class="button primary" href="play.html?core=psp&embedded=1">Open PSP shelf</a>
-        <a class="button" href="play.html?core=psx&embedded=1">Open PS1 shelf</a>
+        <a class="button primary" href="play.html?core=psx&embedded=1">Open PS1 shelf</a>
         <a class="button" href="play.html?core=nds&embedded=1">Open DS shelf</a>
+        <a class="button" href="play.html?core=psp" target="_blank" rel="noreferrer">Open PSP in browser</a>
         <a class="button" href="index.html">Main arcade</a>
       </div>
     </section>
@@ -31,17 +31,20 @@
           <strong>SDK auth:</strong> <span id="discordAuthState">Waiting…</span>
         </div>
         <div class="note-box">
-          <strong>Fullscreen behavior:</strong> Activity mode will try to keep the game clean inside Discord first, then let players pop out to the browser if they want the largest canvas.</strong>
+          <strong>Fullscreen behavior:</strong> Activity mode will try to keep the game clean inside Discord first, then let players pop out to the browser if they want the largest canvas.
+        </div>
+        <div class="note-box warning-box">
+          <strong>PSP policy:</strong> PSP is browser-first here. Lighter systems stay in Discord, but heavy PSP titles should not pretend to be a smooth embedded Activity experience.
         </div>
       </article>
 
       <article class="card">
         <h2>Quick launch lane</h2>
         <div class="button-row stacked-buttons">
-          <a class="button primary" href="play.html?core=psp&game=kingdom-hearts-birth-by-sleep-final-mix-english-patched&launch=1&embedded=1">Kingdom Hearts BBS</a>
-          <a class="button" href="play.html?core=psp&game=grand-theft-auto-vice-city-stories&launch=1&embedded=1">GTA Vice City Stories</a>
-          <a class="button" href="play.html?core=psx&game=crash-bandicoot&launch=1&embedded=1">Crash Bandicoot</a>
+          <a class="button primary" href="play.html?core=psx&game=crash-bandicoot&launch=1&embedded=1">Crash Bandicoot</a>
           <a class="button" href="play.html?core=nds&game=pokemon-heartgold-version&launch=1&embedded=1">Pokémon HeartGold</a>
+          <a class="button" href="play.html?core=psp&game=kingdom-hearts-birth-by-sleep-final-mix-english-patched&launch=1" target="_blank" rel="noreferrer">Kingdom Hearts BBS (browser-first)</a>
+          <a class="button" href="play.html?core=psp&game=grand-theft-auto-vice-city-stories&launch=1" target="_blank" rel="noreferrer">GTA Vice City Stories (browser-first)</a>
         </div>
       </article>
     </section>

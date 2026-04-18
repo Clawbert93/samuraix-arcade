@@ -147,6 +147,18 @@ function resolveEntryUrl(entry) {
   return '';
 }
 
+function getWebTier(entry) {
+  return String(entry?.webTier || '').trim().toLowerCase();
+}
+
+function getWebTierLabel(entry) {
+  const tier = getWebTier(entry);
+  if (tier === 'browser-first') return 'browser-first';
+  if (tier === 'experimental') return 'experimental';
+  if (tier === 'not-recommended') return 'not recommended in web';
+  return '';
+}
+
 function isExternalUrl(value) {
   return /^https?:\/\//i.test(String(value || ''));
 }
@@ -159,12 +171,14 @@ function syncEmbeddedWarnings() {
   if (!embeddedWarningEl) return;
   if (embeddedMode && core === 'psp') {
     embeddedWarningEl.hidden = false;
-    embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. It can work, but browser popout is the recommended path for PSP until we prove a faster profile.';
+    embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. Launch now routes browser-first instead of pretending the embedded path is the best option.';
     if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser (recommended)';
+    if (buttonEl) buttonEl.textContent = 'Open PSP in browser';
     return;
   }
   embeddedWarningEl.hidden = true;
   if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
+  if (buttonEl) buttonEl.textContent = 'Launch';
 }
 
 function syncLaunchState() {
@@ -200,7 +214,11 @@ function setSelectedGame(chosen) {
       const locationNote = isExternalUrl(resolveEntryUrl(selectedGame))
         ? 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.'
         : null;
-      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', locationNote]
+      const tierLabel = getWebTierLabel(selectedGame);
+      const tierNote = tierLabel
+        ? `Web status: ${tierLabel}.`
+        : null;
+      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', tierNote, locationNote]
         .filter(Boolean)
         .join(' ');
     }
@@ -253,7 +271,9 @@ function populateDropdown() {
     const option = document.createElement('option');
     option.value = String(index);
     const suffix = isExternalUrl(resolveEntryUrl(entry)) ? ' (cloud)' : '';
-    option.textContent = `${entry.title}${suffix}`;
+    const tierLabel = getWebTierLabel(entry);
+    const tierSuffix = tierLabel ? ` • ${tierLabel}` : '';
+    option.textContent = `${entry.title}${suffix}${tierSuffix}`;
     dropdownEl.appendChild(option);
   });
 
@@ -300,6 +320,15 @@ dropdownEl?.addEventListener('change', () => {
 
 buttonEl?.addEventListener('click', () => {
   if ((!selectedFile && !selectedGame) || launched) return;
+
+  if (embeddedMode && core === 'psp') {
+    const standaloneUrl = new URL(window.location.href);
+    standaloneUrl.searchParams.delete('embedded');
+    setStatus('PSP is browser-first here. Opening the standalone browser version for a better shot at performance.');
+    window.open(standaloneUrl.toString(), '_blank', 'noopener,noreferrer');
+    return;
+  }
+
   launched = true;
   buttonEl.disabled = true;
   if (inputEl) inputEl.disabled = true;
