@@ -14,6 +14,7 @@ This is the preferred path for oversized DS, PS1, and PSP game assets.
 - `data/pending-large-assets.json` tracks the big files waiting for external hosting
 - `scripts/arcade_set_external_url.py` updates one entry at a time
 - `scripts/arcade_apply_pending_external.py` can bulk-apply URLs from the pending manifest
+- `scripts/upload_r2_pending_assets.py` uploads the staged pending/live large assets to R2 using `secrets/arcade_r2.env`
 - `data/r2-cors.arcade-example.json` contains a starter CORS policy
 
 ## Recommended bucket shape
@@ -69,6 +70,14 @@ This will:
 
 - create library entries for the currently skipped large files
 - move currently live >50 MB DS entries to external URLs too
+
+## Upload helper
+
+Once `secrets/arcade_r2.env` contains the bucket name, public base URL, access key ID, secret access key, and account endpoint, you can upload the staged assets with:
+
+```bash
+/home/robert/OpenClawProjects/.venv_arcade_r2/bin/python scripts/upload_r2_pending_assets.py --group pending --group live
+```
 
 ## Suggested first-wave uploads
 

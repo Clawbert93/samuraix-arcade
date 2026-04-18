@@ -109,12 +109,14 @@
     {
       "title": "Pokemon Platinum Version (USA) (Rev 1)",
       "file": "games/nds/Pokemon_Platinum_Rev1.zip",
-      "notes": "User-provided Nintendo DS release from the Discord games channel. Hosted as the zip because the raw .nds file is larger than GitHub's normal file-size limit."
+      "notes": "User-provided Nintendo DS release from the Discord games channel. Hosted as the zip because the raw .nds file is larger than GitHub's normal file-size limit.",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Pokemon_Platinum_Rev1.zip"
     },
     {
       "title": "Grand Theft Auto: Chinatown Wars",
       "file": "games/nds/Grand_Theft_Auto_Chinatown_Wars.7z",
-      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown."
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original 7z archive for the curated DS dropdown.",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Grand_Theft_Auto_Chinatown_Wars.7z"
     },
     {
       "title": "Digimon World DS",
@@ -174,7 +176,8 @@
     {
       "title": "Pokemon HeartGold Version",
       "file": "games/nds/Pokemon_HeartGold_Version.zip",
-      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown.",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Pokemon_HeartGold_Version.zip"
     },
     {
       "title": "Naruto Shippuden: Naruto vs Sasuke",
@@ -184,7 +187,38 @@
     {
       "title": "Pokemon SoulSilver Version",
       "file": "games/nds/Pokemon_SoulSilver_Version.zip",
-      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown."
+      "notes": "User-provided Nintendo DS release from the Discord games channel, hosted as the original archive for the curated DS dropdown.",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Pokemon_SoulSilver_Version.zip"
+    },
+    {
+      "title": "Kingdom Hearts Re:coded",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Kingdom_Hearts_Re-coded.zip",
+      "notes": "Large externally hosted asset. Source upload: Kingdom_Hearts__Re-coded.zip. archive is fine if emulator accepts it cleanly"
+    },
+    {
+      "title": "The Simpsons Game",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/The_Simpsons_Game.zip",
+      "notes": "Large externally hosted asset. Source upload: Simpsons_Game_The.zip. archive is fine if emulator accepts it cleanly"
+    },
+    {
+      "title": "Pokemon Black Version 2",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Pokemon_Black_Version_2.7z",
+      "notes": "Large externally hosted asset. Source upload: 6111_-_Pokemon_Black_2_US_frieNDS.7z. archive is fine if emulator accepts it cleanly"
+    },
+    {
+      "title": "Pokemon Conquest",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Pokemon_Conquest.zip",
+      "notes": "Large externally hosted asset. Source upload: Pokemon_Conquest.zip. archive is fine if emulator accepts it cleanly"
+    },
+    {
+      "title": "The Sims 3",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/The_Sims_3.zip",
+      "notes": "Large externally hosted asset. Source upload: Sims_3_The.zip. archive is fine if emulator accepts it cleanly"
+    },
+    {
+      "title": "Kirby Super Star Ultra",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/nds/Kirby_Super_Star_Ultra.zip",
+      "notes": "Large externally hosted asset. Source upload: Kirby_Super_Star_Ultra.zip. archive is fine if emulator accepts it cleanly"
     }
   ],
   "n64": [
@@ -239,7 +273,58 @@
       "title": "Harvest Moon: Back to Nature",
       "file": "games/psx/Harvest_Moon_Back_to_Nature.7z",
       "notes": "User-provided PlayStation release from the Discord games channel. The upload was mislabeled .zip but is actually a 7z archive, so it is hosted with the correct extension for the curated PS1 dropdown."
+    },
+    {
+      "title": "Tony Hawk's Pro Skater 2",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Tony_Hawks_Pro_Skater_2.zip",
+      "notes": "Large externally hosted asset. Source upload: Tony_Hawks_Pro_Skater_2.zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Crash Bandicoot",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Crash_Bandicoot.zip",
+      "notes": "Large externally hosted asset. Source upload: Crash_Bandicoot.zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Resident Evil 2: Dual Shock Ver.",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Resident_Evil_2_Dual_Shock_Ver.zip",
+      "notes": "Large externally hosted asset. Source upload: Resident_Evil_2__Dual_Shock_Ver..zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Need for Speed III: Hot Pursuit",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Need_for_Speed_3_Hot_Pursuit.zip",
+      "notes": "Large externally hosted asset. Source upload: Need_for_Speed_3__Hot_Pursuit.zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Crash Team Racing",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Crash_Team_Racing.rar",
+      "notes": "Large externally hosted asset. Source upload: Crash_Team_Racing_U_SCUS-94426.rar. repack to zip or chd before hosting if practical"
+    },
+    {
+      "title": "Resident Evil 3: Nemesis",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Resident_Evil_3_Nemesis.zip",
+      "notes": "Large externally hosted asset. Source upload: Resident_Evil_3__Nemesis.zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Digimon World",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Digimon_World.zip",
+      "notes": "Large externally hosted asset. Source upload: Digimon_World.zip. .chd if conversion is clean, otherwise keep archive"
+    },
+    {
+      "title": "Yu-Gi-Oh! Forbidden Memories",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psx/Yu-Gi-Oh_Forbidden_Memories.7z",
+      "notes": "Large externally hosted asset. Source upload: Yu-Gi-Oh_Forbidden_Memories.zip. the uploaded file is actually a 7z archive despite the .zip name"
     }
   ],
-  "psp": []
+  "psp": [
+    {
+      "title": "Grand Theft Auto: Liberty City Stories",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Grand_Theft_Auto_Liberty_City_Stories.7z",
+      "notes": "Large externally hosted asset. Source upload: Grand_Theft_Auto_-_Liberty_City_Stories_USA_EnFrDeEsIt_v3.00.7z. .cso if clean conversion is available, otherwise keep archive"
+    },
+    {
+      "title": "Assassin's Creed: Bloodlines",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Assassins_Creed_Bloodlines.zip",
+      "notes": "Large externally hosted asset. Source upload: Assassins_Creed__Bloodlines.zip. .cso if clean conversion is available, otherwise keep archive"
+    }
+  ]
 }
