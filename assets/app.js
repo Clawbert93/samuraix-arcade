@@ -143,7 +143,10 @@ function sameOriginCloudProxyUrl(rawUrl) {
 
 function resolveEntryUrl(entry) {
   if (!entry) return '';
-  if (typeof entry.url === 'string' && entry.url.trim()) return sameOriginCloudProxyUrl(entry.url.trim());
+  if (typeof entry.url === 'string' && entry.url.trim()) {
+    const rawUrl = entry.url.trim();
+    return core === 'psp' ? rawUrl : sameOriginCloudProxyUrl(rawUrl);
+  }
   if (typeof entry.file === 'string' && entry.file.trim()) return entry.file.trim();
   return '';
 }
@@ -213,7 +216,9 @@ function setSelectedGame(chosen) {
     setStatus(`Ready to launch curated game: ${selectedGame.title}`);
     if (dropdownNotesEl) {
       const locationNote = isExternalUrl(resolveEntryUrl(selectedGame))
-        ? 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.'
+        ? (core === 'psp'
+          ? 'This PSP title is loading directly from cloud storage in the browser for reliability.'
+          : 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.')
         : null;
       const tierLabel = getWebTierLabel(selectedGame);
       const tierNote = tierLabel
