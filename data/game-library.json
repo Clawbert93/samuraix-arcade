@@ -8,7 +8,13 @@
   ],
   "snes": [],
   "gba": [],
-  "nds": [],
+  "nds": [
+    {
+      "title": "New Super Mario Bros. (USA)",
+      "file": "games/nds/New_Super_Mario_Bros_USA.nds",
+      "notes": "User-provided Nintendo DS ROM added to the curated DS dropdown."
+    }
+  ],
   "n64": [],
   "psx": [],
   "psp": []
