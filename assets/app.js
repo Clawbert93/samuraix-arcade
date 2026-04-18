@@ -101,6 +101,7 @@ const popoutButtonEl = document.getElementById('popoutButton');
 const statusEl = document.getElementById('launchStatus');
 const frameEl = document.getElementById('gameFrame');
 const embeddedWarningEl = document.getElementById('embeddedWarning');
+const pspRuntimeInfoEl = document.getElementById('pspRuntimeInfo');
 
 if (titleEl) titleEl.textContent = config.title;
 if (blurbEl) blurbEl.textContent = config.blurb;
@@ -172,15 +173,34 @@ function setStatus(text) {
 }
 
 function syncEmbeddedWarnings() {
-  if (!embeddedWarningEl) return;
+  if (embeddedWarningEl) {
+    if (embeddedMode && core === 'psp') {
+      embeddedWarningEl.hidden = false;
+      embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. Launch now routes browser-first instead of pretending the embedded path is the best option.';
+    } else {
+      embeddedWarningEl.hidden = true;
+    }
+  }
+
+  if (core === 'psp' && pspRuntimeInfoEl) {
+    let webgl2 = false;
+    try {
+      const canvas = document.createElement('canvas');
+      webgl2 = !!canvas.getContext('webgl2');
+    } catch (error) {}
+    const sab = typeof window.SharedArrayBuffer === 'function';
+    const isolated = window.crossOriginIsolated === true;
+    pspRuntimeInfoEl.hidden = false;
+    pspRuntimeInfoEl.innerHTML = `<strong>PSP runtime check:</strong> crossOriginIsolated=${isolated}, SharedArrayBuffer=${sab}, WebGL2=${webgl2}.`;
+  } else if (pspRuntimeInfoEl) {
+    pspRuntimeInfoEl.hidden = true;
+  }
+
   if (embeddedMode && core === 'psp') {
-    embeddedWarningEl.hidden = false;
-    embeddedWarningEl.innerHTML = '<strong>PSP in Discord:</strong> This is the hardest-case combo, huge game downloads plus a heavy emulator inside a webview. Launch now routes browser-first instead of pretending the embedded path is the best option.';
     if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser (recommended)';
     if (buttonEl) buttonEl.textContent = 'Open PSP in browser';
     return;
   }
-  embeddedWarningEl.hidden = true;
   if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
   if (buttonEl) buttonEl.textContent = 'Launch';
 }
