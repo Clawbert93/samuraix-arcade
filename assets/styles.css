@@ -19,6 +19,10 @@ body {
   color: var(--text);
 }
 
+body.embedded-mode {
+  background: #07110a;
+}
+
 a { color: #8af0b2; }
 
 .shell {
@@ -173,7 +177,49 @@ select option {
   .three-up, .four-up, .five-up, .six-up, .seven-up { grid-template-columns: 1fr; }
 }
 
+.activity-body {
+  background: radial-gradient(circle at top, #102d1a 0%, #061009 58%);
+}
+.activity-shell {
+  width: min(1080px, calc(100vw - 24px));
+  padding-top: 18px;
+}
+.activity-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.activity-hero {
+  margin-bottom: 10px;
+}
+.stacked-buttons {
+  display: grid;
+  gap: 10px;
+}
+.player-hero {
+  transition: opacity 0.2s ease;
+}
+.embedded-mode .player-hero,
+.embedded-mode .grid.two-up {
+  display: none;
+}
+.embedded-mode .shell.player-shell {
+  width: min(100vw, calc(100vw - 12px));
+  padding-top: 8px;
+  padding-bottom: 12px;
+}
+.embedded-mode .player-grid {
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+  margin-top: 8px;
+}
+.embedded-mode .card {
+  border-radius: 16px;
+}
+.embedded-mode .game-frame,
+.embedded-mode #game {
+  min-height: calc(100vh - 120px);
+}
+
 @media (max-width: 860px) {
-  .two-up, .player-grid { grid-template-columns: 1fr; }
+  .two-up, .player-grid, .activity-grid { grid-template-columns: 1fr; }
   .game-frame, #game { min-height: 520px; }
+  .embedded-mode .player-grid { grid-template-columns: 1fr; }
 }

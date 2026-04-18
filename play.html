@@ -8,8 +8,14 @@
   <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+  <script>
+    if (new URLSearchParams(window.location.search).get('embedded') === '1') {
+      document.documentElement.classList.add('embedded-mode');
+      document.body.classList.add('embedded-mode');
+    }
+  </script>
   <main class="shell player-shell">
-    <section class="card hero compact">
+    <section class="card hero compact player-hero">
       <p class="eyebrow">🕹️ Player</p>
       <h1 id="systemTitle">SamuraiX Arcade</h1>
       <p id="systemBlurb" class="lede"></p>
