@@ -66,6 +66,17 @@ const SYSTEMS = {
     ],
     accept: '.cue,.bin,.img,.mdf,.pbp,.chd,.zip,.7z',
   },
+  psp: {
+    title: 'PlayStation Portable browser player',
+    blurb: 'Upload a legal PSP game you own, or use the dropdown once curated games are added. PSP works in this browser stack, but it is a heavier target than the older consoles here.',
+    caveat: 'PSP note: this is heavier than the other retro systems and Safari is not a good target for it. Desktop Chromium-type browsers are the safer bet.',
+    links: [
+      ['EmulatorJS PSP docs', 'https://emulatorjs.org/docs/systems/psp/'],
+      ['EmulatorJS changelog note for PSP support', 'https://emulatorjs.org/docs/news/'],
+      ['Browser emulation overview', 'https://emulation.gametechwiki.com/index.php/Emulators_on_browsers'],
+    ],
+    accept: '.iso,.cso,.pbp,.zip,.7z',
+  },
 };
 
 const params = new URLSearchParams(window.location.search);
