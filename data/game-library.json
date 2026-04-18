@@ -360,9 +360,9 @@
     },
     {
       "title": "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
-      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Kingdom_Hearts_Birth_by_Sleep_Final_Mix_English_Patched.iso",
+      "url": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev/psp/Kingdom_Hearts_Birth_by_Sleep_Final_Mix_English_Patched.cso",
       "webTier": "not-recommended",
-      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. User-reported as the already-patched English build. Heavy action RPG, not recommended for normal web play."
+      "notes": "Large externally hosted PSP asset uploaded by Robbie from a remote laptop via Cloudflare R2. User-reported as the already-patched English build. Now swapped to a .cso build to cut download size by about 392 MB, but it is still a heavy action RPG and not recommended for normal web play."
     }
   ]
 }
