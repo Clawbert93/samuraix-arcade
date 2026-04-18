@@ -208,15 +208,9 @@ function renderLibrary(library) {
   });
 }
 
-async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
-  const insideDiscord = isEmbeddedContext() || params.get('discord') === '1';
-  const sdkImportUrl = insideDiscord ? '/esm/@discord/embedded-app-sdk' : 'https://esm.sh/@discord/embedded-app-sdk';
-  setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
-
+async function loadLibrary() {
   try {
-    const response = await fetch('data/game-library.json', { cache: 'no-store' });
+    const response = await fetch('/data/game-library.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`Library fetch failed: ${response.status}`);
     const library = await response.json();
     renderLibrary(library);
@@ -225,9 +219,16 @@ async function init() {
     setText(libraryStatsEl, 'Could not load the curated library right now.');
     setText(statusEl, 'The Activity shell loaded, but the live game shelf failed to populate.');
   }
+}
+
+async function connectDiscord(clientId, insideDiscord) {
+  if (!insideDiscord) {
+    setText(discordAuthStateEl, 'Standalone browser preview, Discord SDK not required.');
+    return;
+  }
 
   try {
-    const { DiscordSDK } = await import(sdkImportUrl);
+    const { DiscordSDK } = await import('/assets/vendor/discord-embedded-app-sdk.bundle.mjs');
     const discordSdk = new DiscordSDK(clientId);
     await discordSdk.ready();
     setText(discordAuthStateEl, 'Discord SDK connected.');
@@ -238,6 +239,18 @@ async function init() {
       setText(statusEl, 'The in-Discord game hub loaded, but the Discord SDK handshake did not complete yet.');
     }
   }
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
+  const insideDiscord = isEmbeddedContext() || params.get('discord') === '1';
+  setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
+
+  await Promise.allSettled([
+    connectDiscord(clientId, insideDiscord),
+    loadLibrary(),
+  ]);
 }
 
 init();
