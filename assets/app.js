@@ -81,6 +81,8 @@ const SYSTEMS = {
 
 const params = new URLSearchParams(window.location.search);
 const core = SYSTEMS[params.get('core')] ? params.get('core') : 'gb';
+const requestedGameKey = String(params.get('game') || '').trim().toLowerCase();
+const autoLaunchRequested = ['1', 'true', 'yes'].includes(String(params.get('launch') || params.get('autostart') || '').trim().toLowerCase());
 const config = SYSTEMS[core];
 
 const titleEl = document.getElementById('systemTitle');
@@ -136,6 +138,62 @@ function setStatus(text) {
 function syncLaunchState() {
   if (!buttonEl) return;
   buttonEl.disabled = !(selectedFile || selectedGame) || launched;
+}
+
+function slugifyTitle(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function setSelectedGame(chosen) {
+  const entries = Array.isArray(library[core]) ? library[core] : [];
+  selectedGame = chosen;
+  if (selectedGame) {
+    selectedFile = null;
+    if (inputEl) inputEl.value = '';
+    if (dropdownEl) {
+      const index = entries.indexOf(selectedGame);
+      dropdownEl.value = index >= 0 ? String(index) : '';
+    }
+    setStatus(`Ready to launch curated game: ${selectedGame.title}`);
+    if (dropdownNotesEl) {
+      const locationNote = isExternalUrl(resolveEntryUrl(selectedGame))
+        ? 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.'
+        : null;
+      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', locationNote]
+        .filter(Boolean)
+        .join(' ');
+    }
+  } else if (selectedFile) {
+    if (dropdownEl) dropdownEl.value = '';
+    setStatus(`Ready to launch uploaded file: ${selectedFile.name}`);
+  } else {
+    if (dropdownEl) dropdownEl.value = '';
+    const entriesExist = entries.length > 0;
+    setStatus(entriesExist ? 'Choose a curated game or upload a file to start.' : 'Upload a file to start.');
+    if (dropdownNotesEl) {
+      dropdownNotesEl.textContent = entriesExist
+        ? 'Pick from the curated list, or ignore it and upload your own file below.'
+        : 'No curated games for this emulator yet. Once you send me more files, I can add them here.';
+    }
+  }
+  syncLaunchState();
+}
+
+function applyRequestedGame() {
+  if (!requestedGameKey) return;
+  const entries = Array.isArray(library[core]) ? library[core] : [];
+  const chosen = entries.find((entry) => {
+    const title = String(entry.title || '').trim().toLowerCase();
+    return title === requestedGameKey || slugifyTitle(entry.title) === requestedGameKey;
+  });
+  if (!chosen) return;
+  setSelectedGame(chosen);
+  if (autoLaunchRequested && buttonEl && !buttonEl.disabled) {
+    buttonEl.click();
+  }
 }
 
 function populateDropdown() {
@@ -199,31 +257,7 @@ inputEl?.addEventListener('change', () => {
 dropdownEl?.addEventListener('change', () => {
   const entries = Array.isArray(library[core]) ? library[core] : [];
   const chosen = dropdownEl.value === '' ? null : entries[Number(dropdownEl.value)] || null;
-  selectedGame = chosen;
-  if (selectedGame) {
-    selectedFile = null;
-    if (inputEl) inputEl.value = '';
-    setStatus(`Ready to launch curated game: ${selectedGame.title}`);
-    if (dropdownNotesEl) {
-      const locationNote = isExternalUrl(resolveEntryUrl(selectedGame))
-        ? 'This title is hosted outside GitHub Pages so bigger files can load without bloating the site repo.'
-        : null;
-      dropdownNotesEl.textContent = [selectedGame.notes || 'Curated game selected.', locationNote]
-        .filter(Boolean)
-        .join(' ');
-    }
-  } else if (selectedFile) {
-    setStatus(`Ready to launch uploaded file: ${selectedFile.name}`);
-  } else {
-    const entriesExist = entries.length > 0;
-    setStatus(entriesExist ? 'Choose a curated game or upload a file to start.' : 'Upload a file to start.');
-    if (dropdownNotesEl) {
-      dropdownNotesEl.textContent = entriesExist
-        ? 'Pick from the curated list, or ignore it and upload your own file below.'
-        : 'No curated games for this emulator yet. Once you send me more files, I can add them here.';
-    }
-  }
-  syncLaunchState();
+  setSelectedGame(chosen);
 });
 
 buttonEl?.addEventListener('click', () => {
@@ -281,6 +315,7 @@ buttonEl?.addEventListener('click', () => {
 loadLibrary().then(() => {
   setStatus('Choose a curated game or upload a file to start.');
   syncLaunchState();
+  applyRequestedGame();
 });
 
 window.addEventListener('beforeunload', () => {
