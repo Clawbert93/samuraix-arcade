@@ -1,0 +1,65 @@
+{
+  "new": [
+    "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
+    "Dante's Inferno",
+    "God of War: Chains of Olympus",
+    "Grand Theft Auto: Vice City Stories",
+    "Naruto Shippuden: Ultimate Ninja Impact",
+    "Naruto Shippuden: Ultimate Ninja Heroes 3",
+    "Grand Theft Auto: Chinatown Wars",
+    "Pokemon Black Version 2",
+    "Kingdom Hearts Re:coded",
+    "Crash Bandicoot"
+  ],
+  "featured": [
+    "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
+    "Crash Bandicoot",
+    "Tony Hawk's Pro Skater 2",
+    "Grand Theft Auto: Vice City Stories",
+    "Pokemon HeartGold Version",
+    "Pokemon SoulSilver Version",
+    "Dante's Inferno",
+    "Kirby Super Star Ultra"
+  ],
+  "shortcuts": {
+    "kh": [
+      "Kingdom Hearts Birth by Sleep Final Mix (English Patched)",
+      "Kingdom Hearts Re:coded",
+      "Kingdom Hearts: Chain of Memories"
+    ],
+    "gta": [
+      "Grand Theft Auto: Vice City Stories",
+      "Grand Theft Auto: Liberty City Stories",
+      "Grand Theft Auto: Chinatown Wars"
+    ],
+    "pokemon": [
+      "Pokemon HeartGold Version",
+      "Pokemon SoulSilver Version",
+      "Pokemon Platinum Version (USA) (Rev 1)",
+      "Pokemon Black Version 2",
+      "Pokemon FireRed: Rocket Edition",
+      "Pokemon Mystery Dungeon: Explorers of Sky"
+    ]
+  },
+  "fridayGameNight": {
+    "headline": "🎮 Friday Game Night at the SamuraiX arcade desk",
+    "slots": [
+      {
+        "label": "Main event",
+        "title": "Crash Team Racing"
+      },
+      {
+        "label": "Handheld heat check",
+        "title": "Grand Theft Auto: Vice City Stories"
+      },
+      {
+        "label": "Cozy cooldown",
+        "title": "Pokemon HeartGold Version"
+      },
+      {
+        "label": "Chaos pick",
+        "title": "Dante's Inferno"
+      }
+    ]
+  }
+}
