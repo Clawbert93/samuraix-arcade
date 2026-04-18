@@ -69,6 +69,11 @@ Recommended size cleanup before upload:
 - PS1 multi-file games -> convert to `.chd` when practical
 - PSP `.iso` -> convert to `.cso` when practical
 
+Workspace-local helper for PSP conversion:
+
+- `python3 scripts/convert_psp_asset_to_cso.py <local-path-or-public-url> --output-dir <dir>`
+- Uses workspace-local `ciso` + `7z` binaries staged under `.tools/psp_cso/`, so it does not require a system-wide install.
+
 Staging list for the current skipped large files lives in:
 
 - `data/pending-large-assets.json`
