@@ -892,8 +892,12 @@ function normalizeBridgePayload(action, payload = {}) {
   return compactPayload;
 }
 
+function roomBridgeOrigin() {
+  return window.location.origin;
+}
+
 function handleRoomBridgeMessage(event) {
-  if (event.origin !== CANONICAL_ARCADE_ORIGIN) return;
+  if (event.origin !== roomBridgeOrigin()) return;
   const data = event.data;
   if (!data || data.type !== 'samuraix-room-bridge-result' || !data.requestId) return;
   const pending = roomBridgePending.get(data.requestId);
@@ -912,7 +916,7 @@ function ensureRoomBridge() {
     iframe.hidden = true;
     iframe.setAttribute('aria-hidden', 'true');
     iframe.tabIndex = -1;
-    iframe.src = `${CANONICAL_ARCADE_ORIGIN}/room-bridge.html`;
+    iframe.src = '/room-bridge.html';
     iframe.addEventListener('load', () => resolve(iframe), { once: true });
     iframe.addEventListener('error', () => reject(new Error('Room bridge failed to load.')), { once: true });
     document.body.appendChild(iframe);
@@ -945,7 +949,7 @@ async function roomActionFetchViaBridge(roomId, action, payload = {}) {
       roomId,
       action,
       payload: normalizeBridgePayload(action, payload),
-    }, CANONICAL_ARCADE_ORIGIN);
+    }, roomBridgeOrigin());
   });
 
   return new Response(result.body || '', {

@@ -94,6 +94,8 @@ function buildActivityRouteHref(core, options = {}) {
   if (options.game) params.set('game', slugifyTitle(options.game));
   if (options.launch) params.set('launch', '1');
   if (options.multiplayer) params.set('multiplayer', '1');
+  if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
+  if (options.activity !== false && core !== 'psp') params.set('activity', '1');
   const roomId = String(options.room || activityState.instanceId || '').trim();
   if (roomId) params.set('room', roomId);
   const clientId = String(options.clientId || activityState.clientId || '').trim();
