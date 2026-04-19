@@ -477,7 +477,8 @@ export default {
     }
 
     if (url.pathname === '/activity') {
-      const rewritten = new URL('/activity.html', url);
+      const wantsPlayerRoute = Boolean(url.searchParams.get('core'));
+      const rewritten = new URL(wantsPlayerRoute ? '/play.html' : '/activity.html', url);
       rewritten.search = url.search;
       return env.ASSETS.fetch(new Request(rewritten, request));
     }
