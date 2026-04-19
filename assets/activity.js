@@ -66,6 +66,10 @@ function isEmbeddedContext() {
   }
 }
 
+function isDiscordActivityHost() {
+  return /(?:^|\.)discordsays\.com$/i.test(window.location.hostname);
+}
+
 function slugifyTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -434,7 +438,7 @@ async function connectDiscord(clientId, insideDiscord) {
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
-  const insideDiscord = isEmbeddedContext() || params.get('discord') === '1';
+  const insideDiscord = isEmbeddedContext() || params.get('discord') === '1' || isDiscordActivityHost();
   activityState.clientId = clientId;
   activityState.insideDiscord = insideDiscord;
   setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
