@@ -752,7 +752,12 @@ fullscreenButtonEl?.addEventListener('click', async () => {
 });
 
 popoutButtonEl?.addEventListener('click', () => {
-  window.open(window.location.href, '_blank', 'noopener,noreferrer');
+  const target = new URL(window.location.href);
+  target.searchParams.delete('embedded');
+  target.searchParams.delete('activity');
+  target.searchParams.delete('discord');
+  target.searchParams.delete('client_id');
+  window.open(target.toString(), '_blank', 'noopener,noreferrer');
 });
 
 document.addEventListener('fullscreenchange', syncFullscreenState);

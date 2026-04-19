@@ -290,6 +290,13 @@ select option {
   gap: 10px;
   flex-wrap: wrap;
 }
+.embedded-hubbar .button {
+  min-height: 38px;
+  padding: 0 14px;
+}
+.player-hero .button {
+  min-height: 40px;
+}
 .player-hero {
   transition: opacity 0.2s ease;
 }
@@ -304,6 +311,15 @@ select option {
 }
 .embedded-mode .embedded-hubbar {
   display: block;
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+}
+.embedded-mode .embedded-hubbar-row {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  padding-bottom: 4px;
 }
 .embedded-mode .player-grid {
   grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
