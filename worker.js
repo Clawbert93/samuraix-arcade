@@ -339,94 +339,101 @@ export class ArcadeRoom {
   }
 
   async fetch(request) {
-    await this.ensureLoaded();
-    const url = new URL(request.url);
-    const pathRoomId = normalizeRoomId(url.pathname.split('/')[3]);
-    if (pathRoomId && (!this.room.roomId || this.room.roomId === this.state.id.toString())) {
-      this.room.roomId = pathRoomId;
-      if (!this.room.instanceId) this.room.instanceId = pathRoomId;
-      await this.save();
-    }
-    await this.pruneStaleMembers();
-
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          'access-control-allow-origin': '*',
-          'access-control-allow-methods': 'GET,POST,OPTIONS',
-          'access-control-allow-headers': 'content-type',
-          'cache-control': 'no-store',
-        },
-      });
-    }
-
-    const pathname = url.pathname.replace(/\/$/, '');
-    const readQueryBody = () => {
-      let participants = [];
-      try {
-        const rawParticipants = String(url.searchParams.get('participants') || '').trim();
-        if (rawParticipants) participants = JSON.parse(rawParticipants);
-      } catch (error) {}
-      return {
-        actorId: url.searchParams.get('actorId') || '',
-        targetId: url.searchParams.get('targetId') || '',
-        clientId: url.searchParams.get('clientId') || '',
-        displayName: url.searchParams.get('displayName') || '',
-        instanceId: url.searchParams.get('instanceId') || '',
-        core: url.searchParams.get('core') || '',
-        gameId: url.searchParams.get('gameId') || '',
-        gameTitle: url.searchParams.get('gameTitle') || '',
-        slot: url.searchParams.get('slot') || '',
-        reason: url.searchParams.get('reason') || '',
-        launched: ['1', 'true', 'yes'].includes(String(url.searchParams.get('launched') || '').trim().toLowerCase()),
-        participants,
-      };
-    };
-
-    if (request.method === 'GET' && pathname.endsWith('/sync')) {
-      return json(await this.handleSync(readQueryBody()), 200, { 'access-control-allow-origin': '*' });
-    }
-    if (request.method === 'GET' && pathname.endsWith('/assign-slot')) {
-      const response = await this.handleAssign(readQueryBody());
-      response.headers.set('access-control-allow-origin', '*');
-      return response;
-    }
-    if (request.method === 'GET' && pathname.endsWith('/request-seat')) {
-      const response = await this.handleRequestSeat(readQueryBody());
-      response.headers.set('access-control-allow-origin', '*');
-      return response;
-    }
-    if (request.method === 'GET') {
-      return json(this.publicState(url.searchParams.get('viewerId') || null), 200, { 'access-control-allow-origin': '*' });
-    }
-
-    let body = {};
     try {
-      body = await request.json();
+      await this.ensureLoaded();
+      const url = new URL(request.url);
+      const pathRoomId = normalizeRoomId(url.pathname.split('/')[3]);
+      if (pathRoomId && (!this.room.roomId || this.room.roomId === this.state.id.toString())) {
+        this.room.roomId = pathRoomId;
+        if (!this.room.instanceId) this.room.instanceId = pathRoomId;
+        await this.save();
+      }
+      await this.pruneStaleMembers();
+
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            'access-control-allow-origin': '*',
+            'access-control-allow-methods': 'GET,POST,OPTIONS',
+            'access-control-allow-headers': 'content-type',
+            'cache-control': 'no-store',
+          },
+        });
+      }
+
+      const pathname = url.pathname.replace(/\/$/, '');
+      const readQueryBody = () => {
+        let participants = [];
+        try {
+          const rawParticipants = String(url.searchParams.get('participants') || '').trim();
+          if (rawParticipants) participants = JSON.parse(rawParticipants);
+        } catch (error) {}
+        return {
+          actorId: url.searchParams.get('actorId') || '',
+          targetId: url.searchParams.get('targetId') || '',
+          clientId: url.searchParams.get('clientId') || '',
+          displayName: url.searchParams.get('displayName') || '',
+          instanceId: url.searchParams.get('instanceId') || '',
+          core: url.searchParams.get('core') || '',
+          gameId: url.searchParams.get('gameId') || '',
+          gameTitle: url.searchParams.get('gameTitle') || '',
+          slot: url.searchParams.get('slot') || '',
+          reason: url.searchParams.get('reason') || '',
+          launched: ['1', 'true', 'yes'].includes(String(url.searchParams.get('launched') || '').trim().toLowerCase()),
+          participants,
+        };
+      };
+
+      if (request.method === 'GET' && pathname.endsWith('/sync')) {
+        return json(await this.handleSync(readQueryBody()), 200, { 'access-control-allow-origin': '*' });
+      }
+      if (request.method === 'GET' && pathname.endsWith('/assign-slot')) {
+        const response = await this.handleAssign(readQueryBody());
+        response.headers.set('access-control-allow-origin', '*');
+        return response;
+      }
+      if (request.method === 'GET' && pathname.endsWith('/request-seat')) {
+        const response = await this.handleRequestSeat(readQueryBody());
+        response.headers.set('access-control-allow-origin', '*');
+        return response;
+      }
+      if (request.method === 'GET') {
+        return json(this.publicState(url.searchParams.get('viewerId') || null), 200, { 'access-control-allow-origin': '*' });
+      }
+
+      let body = {};
+      try {
+        body = await request.json();
+      } catch (error) {
+        return json({ error: 'Expected JSON request body.' }, 400, { 'access-control-allow-origin': '*' });
+      }
+
+      if (pathname.endsWith('/sync')) {
+        return json(await this.handleSync(body), 200, { 'access-control-allow-origin': '*' });
+      }
+      if (pathname.endsWith('/assign-slot')) {
+        const response = await this.handleAssign(body);
+        response.headers.set('access-control-allow-origin', '*');
+        return response;
+      }
+      if (pathname.endsWith('/request-seat')) {
+        const response = await this.handleRequestSeat(body);
+        response.headers.set('access-control-allow-origin', '*');
+        return response;
+      }
+
+      return json({ error: 'Unknown room action.' }, 404, { 'access-control-allow-origin': '*' });
     } catch (error) {
-      return json({ error: 'Expected JSON request body.' }, 400, { 'access-control-allow-origin': '*' });
+      return json({
+        error: 'ArcadeRoom fetch failed.',
+        message: String(error?.message || error || 'Unknown Durable Object error.'),
+      }, 500, { 'access-control-allow-origin': '*' });
     }
-
-    if (pathname.endsWith('/sync')) {
-      return json(await this.handleSync(body), 200, { 'access-control-allow-origin': '*' });
-    }
-    if (pathname.endsWith('/assign-slot')) {
-      const response = await this.handleAssign(body);
-      response.headers.set('access-control-allow-origin', '*');
-      return response;
-    }
-    if (pathname.endsWith('/request-seat')) {
-      const response = await this.handleRequestSeat(body);
-      response.headers.set('access-control-allow-origin', '*');
-      return response;
-    }
-
-    return json({ error: 'Unknown room action.' }, 404, { 'access-control-allow-origin': '*' });
   }
 }
 
-function routeRoomRequest(request, env, roomId) {
+async function routeRoomRequest(request, env, roomId) {
   if (!env.MULTIPLAYER_ROOMS) {
     return json({ error: 'Room Durable Object binding is missing.' }, 500);
   }
@@ -434,9 +441,17 @@ function routeRoomRequest(request, env, roomId) {
   if (!normalizedRoomId) {
     return json({ error: 'Missing room id.' }, 400);
   }
-  const id = env.MULTIPLAYER_ROOMS.idFromName(normalizedRoomId);
-  const stub = env.MULTIPLAYER_ROOMS.get(id);
-  return stub.fetch(request);
+  try {
+    const id = env.MULTIPLAYER_ROOMS.idFromName(normalizedRoomId);
+    const stub = env.MULTIPLAYER_ROOMS.get(id);
+    return await stub.fetch(request);
+  } catch (error) {
+    return json({
+      error: 'Room route failed.',
+      message: String(error?.message || error || 'Unknown room route error.'),
+      roomId: normalizedRoomId,
+    }, 500, { 'access-control-allow-origin': '*' });
+  }
 }
 
 export default {

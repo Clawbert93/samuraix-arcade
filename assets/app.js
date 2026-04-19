@@ -864,8 +864,7 @@ async function refreshDiscordRoomParticipants() {
 }
 
 function buildRoomActionUrl(roomId, action, payload = {}) {
-  const baseOrigin = embeddedMode ? CANONICAL_ARCADE_ORIGIN : window.location.origin;
-  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, baseOrigin);
+  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, window.location.origin);
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value == null || value === '') return;
     if (typeof value === 'boolean') {
@@ -892,9 +891,6 @@ async function roomActionFetch(roomId, action, payload = {}) {
     return fetch(queryUrl, {
       method: 'GET',
       cache: 'no-store',
-      credentials: 'omit',
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
     });
   }
 
