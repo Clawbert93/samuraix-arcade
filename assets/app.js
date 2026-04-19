@@ -1,3 +1,5 @@
+const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
+
 const SYSTEMS = {
   gb: {
     title: 'Game Boy / Game Boy Color browser player',
@@ -290,6 +292,20 @@ function installKeyboardFocusBridge() {
     if (isEditableElement(document.activeElement)) return;
     focusGameTarget();
   });
+}
+
+async function connectDiscordSdkIfEmbedded() {
+  if (!embeddedMode) return;
+
+  try {
+    const { DiscordSDK } = await import('/assets/vendor/discord-embedded-app-sdk.bundle.mjs');
+    const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
+    const discordSdk = new DiscordSDK(clientId);
+    window.__samuraixDiscordSdk = discordSdk;
+    await discordSdk.ready();
+  } catch (error) {
+    console.error('Discord player SDK init failed', error);
+  }
 }
 
 function isLikelyTouchDevice() {
@@ -752,6 +768,8 @@ pspPresetEl?.addEventListener('change', () => {
 installKeyboardFocusBridge();
 syncPspPresetUi();
 syncEmbeddedWarnings();
+
+connectDiscordSdkIfEmbedded();
 
 loadLibrary().then(() => {
   setStatus(core === 'psp'
