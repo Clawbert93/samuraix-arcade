@@ -463,7 +463,7 @@ function syncEmbeddedWarnings() {
         : '<strong>DS touch status:</strong> this build now forces the DeSmuME touch-style pointer mode on touch devices. If a game still ignores finger input, DS stylus support may still be desktop-only in this browser for now.';
     } else if (embeddedMode) {
       embeddedWarningEl.hidden = false;
-      embeddedWarningEl.innerHTML = '<strong>Embedded mode:</strong> if controls feel weird in a webview, use Open in browser for the cleanest version.';
+      embeddedWarningEl.innerHTML = '<strong>Embedded mode:</strong> Discord Activity is great for quick play, but browser popout is the reliable path for fullscreen, save-state tools, and the cleanest emulator controls.';
     } else {
       embeddedWarningEl.hidden = true;
     }
@@ -484,18 +484,22 @@ function syncEmbeddedWarnings() {
   }
 
   if (embeddedMode && core === 'psp') {
-    if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser (recommended)';
+    if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (recommended)';
     if (buttonEl) buttonEl.textContent = 'Open PSP in browser';
     return;
   }
-  if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
+  if (embeddedMode) {
+    if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (fullscreen + save states)';
+  } else if (popoutButtonEl) {
+    popoutButtonEl.textContent = 'Open in browser';
+  }
   if (buttonEl) buttonEl.textContent = core === 'psp' ? 'Attempt launch (experimental)' : 'Launch';
 }
 
 function syncLaunchState() {
   if (!buttonEl) return;
   buttonEl.disabled = !(selectedFile || selectedGame) || launched;
-  if (fullscreenButtonEl) fullscreenButtonEl.disabled = !launched;
+  if (fullscreenButtonEl) fullscreenButtonEl.disabled = embeddedMode || !launched;
 }
 
 function syncFullscreenState() {
@@ -710,6 +714,15 @@ buttonEl?.addEventListener('click', () => {
   window.EJS_disableAutoLang = false;
   window.EJS_cacheConfig = { enabled: true, cacheMaxSizeMB: 1024, cacheMaxAgeMins: 1440 };
   window.EJS_controlScheme = core === 'nds' ? 'nds' : undefined;
+  window.EJS_Buttons = embeddedMode
+    ? {
+        fullscreen: false,
+        saveState: false,
+        loadState: false,
+        quickSave: false,
+        quickLoad: false,
+      }
+    : undefined;
 
   const script = document.createElement('script');
   script.src = `${runtimeDataBase}loader.js`;
@@ -733,7 +746,10 @@ buttonEl?.addEventListener('click', () => {
   const ndsTouchFallbackNote = core === 'nds' && isLikelyTouchDevice()
     ? ' Touch device detected, so this DS launch is using the safer DeSmuME fallback, a pinned EmulatorJS build, and forced touch-style stylus settings.'
     : '';
-  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}`);
+  const embeddedFeatureNote = embeddedMode && core !== 'psp'
+    ? ' Fullscreen and save-state tools are browser-mode features for now.'
+    : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}${embeddedFeatureNote}`);
   syncLaunchState();
 });
 
