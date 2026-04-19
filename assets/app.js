@@ -882,20 +882,16 @@ function buildRoomActionUrl(roomId, action, payload = {}) {
 }
 
 async function roomActionFetch(roomId, action, payload = {}) {
-  const queryUrl = buildRoomActionUrl(roomId, action, payload);
   const preferQueryTransport = embeddedMode;
 
   if (preferQueryTransport) {
-    let response = await fetch(queryUrl, { method: 'GET' });
-    if (response.ok) return response;
-    response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    return response;
+    const compactPayload = { ...payload };
+    if (action === 'sync') delete compactPayload.participants;
+    const queryUrl = buildRoomActionUrl(roomId, action, compactPayload);
+    return fetch(queryUrl, { method: 'GET' });
   }
 
+  const queryUrl = buildRoomActionUrl(roomId, action, payload);
   let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -904,6 +900,14 @@ async function roomActionFetch(roomId, action, payload = {}) {
   if (response.ok) return response;
   response = await fetch(queryUrl, { method: 'GET' });
   return response;
+}
+
+async function describeRoomActionError(response) {
+  const contentType = String(response?.headers?.get('content-type') || '').toLowerCase();
+  const raw = await response.text().catch(() => '');
+  if (contentType.includes('text/html')) return `HTTP ${response.status} Worker exception`;
+  const singleLine = String(raw || '').replace(/\s+/g, ' ').trim();
+  return `HTTP ${response.status}${singleLine ? ` ${singleLine.slice(0, 240)}` : ''}`;
 }
 
 async function syncRoomState(reason = 'poll') {
@@ -930,8 +934,7 @@ async function syncRoomState(reason = 'poll') {
   try {
     const response = await roomActionFetch(roomId, 'sync', payload);
     if (!response.ok) {
-      const details = await response.text().catch(() => '');
-      throw new Error(`HTTP ${response.status}${details ? ` ${details}` : ''}`);
+      throw new Error(await describeRoomActionError(response));
     }
 
     multiplayerRoomState = await response.json();
