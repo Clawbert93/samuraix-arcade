@@ -119,6 +119,17 @@ const statusEl = document.getElementById('launchStatus');
 const frameEl = document.getElementById('gameFrame');
 const embeddedWarningEl = document.getElementById('embeddedWarning');
 const pspRuntimeInfoEl = document.getElementById('pspRuntimeInfo');
+const roomPanelEl = document.getElementById('roomPanel');
+const roomSummaryEl = document.getElementById('roomSummary');
+const roomInstanceIdEl = document.getElementById('roomInstanceId');
+const roomViewerStateEl = document.getElementById('roomViewerState');
+const roomHostStateEl = document.getElementById('roomHostState');
+const roomGameStateEl = document.getElementById('roomGameState');
+const roomSlotSummaryEl = document.getElementById('roomSlotSummary');
+const roomParticipantsEl = document.getElementById('roomParticipants');
+const roomDebugNoteEl = document.getElementById('roomDebugNote');
+const requestSeatButtonEl = document.getElementById('requestSeatButton');
+const refreshRoomButtonEl = document.getElementById('refreshRoomButton');
 
 if (frameEl) {
   frameEl.tabIndex = 0;
@@ -148,6 +159,25 @@ let library = {};
 let objectUrl = null;
 let launched = false;
 let ndsTouchBridgeObserver = null;
+let roomSyncTimer = null;
+let discordRoomParticipants = [];
+let multiplayerRoomState = null;
+let discordSdkInstance = null;
+let discordInstanceId = '';
+
+const multiplayerRequested = ['1', 'true', 'yes'].includes(String(params.get('multiplayer') || '').trim().toLowerCase());
+const roomViewerId = (() => {
+  try {
+    const existing = sessionStorage.getItem('samuraixArcadeViewerId');
+    if (existing) return existing;
+    const created = `viewer-${crypto.randomUUID().slice(0, 8)}`;
+    sessionStorage.setItem('samuraixArcadeViewerId', created);
+    return created;
+  } catch (error) {
+    return `viewer-${Math.random().toString(36).slice(2, 10)}`;
+  }
+})();
+const roomViewerName = `Player ${roomViewerId.slice(-4)}`;
 
 const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
@@ -298,17 +328,25 @@ function installKeyboardFocusBridge() {
 }
 
 async function connectDiscordSdkIfEmbedded() {
-  if (!embeddedMode) return;
+  if (!embeddedMode) {
+    startRoomSyncLoop();
+    return;
+  }
 
   try {
     const { DiscordSDK } = await import('/assets/vendor/discord-embedded-app-sdk.bundle.mjs');
     const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
     const discordSdk = new DiscordSDK(clientId);
+    discordSdkInstance = discordSdk;
+    discordInstanceId = String(discordSdk.instanceId || '').trim();
     window.__samuraixDiscordSdk = discordSdk;
     await discordSdk.ready();
+    await refreshDiscordRoomParticipants();
   } catch (error) {
     console.error('Discord player SDK init failed', error);
   }
+
+  startRoomSyncLoop();
 }
 
 function isLikelyTouchDevice() {
@@ -532,6 +570,273 @@ function syncFullscreenState() {
   }
 }
 
+function getRequestedRoomId() {
+  const explicit = String(params.get('room') || '').trim().toLowerCase();
+  if (explicit) return explicit;
+  if (discordInstanceId) return String(discordInstanceId).trim().toLowerCase();
+  return '';
+}
+
+function getEffectiveRoomId() {
+  return getRequestedRoomId();
+}
+
+function shouldShowRoomPanel() {
+  return embeddedMode || multiplayerRequested || Boolean(getEffectiveRoomId());
+}
+
+function currentRequestedGameId() {
+  if (selectedGame?.title) return slugifyTitle(selectedGame.title);
+  if (requestedGameKey) return requestedGameKey;
+  return '';
+}
+
+function currentRequestedGameTitle() {
+  return selectedGame?.title || '';
+}
+
+function sanitizeRoomParticipantList(rawParticipants) {
+  return Array.isArray(rawParticipants)
+    ? rawParticipants.map((entry) => ({
+        id: String(entry?.id || entry?.userId || entry?.user_id || '').trim(),
+        displayName: String(entry?.displayName || entry?.global_name || entry?.globalName || entry?.username || entry?.nick || entry?.name || 'Unknown player').trim(),
+      })).filter((entry) => entry.id || entry.displayName)
+    : [];
+}
+
+function createRoomChip(label, warning = false) {
+  const chip = document.createElement('span');
+  chip.className = `room-chip${warning ? ' warning' : ''}`;
+  chip.textContent = label;
+  return chip;
+}
+
+function getViewerMember(state = multiplayerRoomState) {
+  return state?.members?.find((member) => member.clientId === roomViewerId) || null;
+}
+
+function roomStateSummary(member) {
+  if (!member) return 'Not synced yet';
+  if (member.isHost) return `${member.displayName} (host)`;
+  if (member.playerSlot) return `${member.displayName} (${member.playerSlot.toUpperCase()})`;
+  return `${member.displayName} (spectator)`;
+}
+
+function renderRoomParticipants(state = multiplayerRoomState) {
+  if (!roomParticipantsEl) return;
+  roomParticipantsEl.innerHTML = '';
+
+  const members = Array.isArray(state?.members) ? state.members : [];
+  if (!members.length) {
+    const empty = document.createElement('p');
+    empty.className = 'subtle';
+    empty.textContent = 'No synced room members yet. Open this same Activity instance on another account to test the shared room.';
+    roomParticipantsEl.appendChild(empty);
+    return;
+  }
+
+  const viewer = getViewerMember(state);
+  const viewerIsHost = viewer?.isHost === true;
+
+  members.forEach((member) => {
+    const card = document.createElement('div');
+    card.className = 'room-member';
+
+    const head = document.createElement('div');
+    head.className = 'room-member-head';
+
+    const name = document.createElement('div');
+    name.className = 'room-member-name';
+    name.textContent = member.displayName || member.clientId;
+    head.appendChild(name);
+
+    const meta = document.createElement('div');
+    meta.className = 'room-member-meta';
+    meta.appendChild(createRoomChip(member.isHost ? 'Host' : 'Guest', member.isHost));
+    meta.appendChild(createRoomChip(member.playerSlot ? member.playerSlot.toUpperCase() : 'Spectator', !member.playerSlot));
+    if (member.requestedSlot) meta.appendChild(createRoomChip(`Requested ${String(member.requestedSlot).toUpperCase()}`));
+    head.appendChild(meta);
+    card.appendChild(head);
+
+    if (viewerIsHost && !member.isHost) {
+      const actions = document.createElement('div');
+      actions.className = 'room-member-actions';
+      ['p2', 'p3', 'p4'].forEach((slot) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `button${member.playerSlot === slot ? ' primary' : ''}`;
+        button.textContent = `Grant ${slot.toUpperCase()}`;
+        button.addEventListener('click', () => assignRoomSlot(member.clientId, slot));
+        actions.appendChild(button);
+      });
+      const spectatorButton = document.createElement('button');
+      spectatorButton.type = 'button';
+      spectatorButton.className = 'button';
+      spectatorButton.textContent = 'Watch only';
+      spectatorButton.addEventListener('click', () => assignRoomSlot(member.clientId, 'spectator'));
+      actions.appendChild(spectatorButton);
+      card.appendChild(actions);
+    }
+
+    roomParticipantsEl.appendChild(card);
+  });
+
+  if (Array.isArray(state?.participantSnapshot) && state.participantSnapshot.length) {
+    const snapshot = document.createElement('div');
+    snapshot.className = 'room-discord-snapshot';
+    state.participantSnapshot.forEach((participant) => {
+      snapshot.appendChild(createRoomChip(participant.displayName || participant.id || 'Discord viewer'));
+    });
+    roomParticipantsEl.appendChild(snapshot);
+  }
+}
+
+function renderRoomState(state = multiplayerRoomState) {
+  if (!roomPanelEl) return;
+  const visible = shouldShowRoomPanel();
+  roomPanelEl.hidden = !visible;
+  if (!visible) return;
+
+  const roomId = getEffectiveRoomId();
+  const viewer = getViewerMember(state);
+  const host = state?.members?.find((member) => member.clientId === state?.hostClientId) || null;
+
+  if (roomInstanceIdEl) roomInstanceIdEl.textContent = roomId || 'Waiting for Discord instance…';
+  if (roomSummaryEl) {
+    roomSummaryEl.textContent = roomId
+      ? 'This panel is the shared-room control layer for the Discord Activity. Watch-only join and host-controlled slot assignment are wired here first.'
+      : 'Waiting for a room id from Discord or the URL before the shared-room panel can fully sync.';
+  }
+  if (roomViewerStateEl) roomViewerStateEl.textContent = viewer ? roomStateSummary(viewer) : `${roomViewerName} (not synced yet)`;
+  if (roomHostStateEl) roomHostStateEl.textContent = host ? host.displayName : 'No host yet';
+  if (roomGameStateEl) roomGameStateEl.textContent = state?.gameTitle ? `${state.gameTitle}${state?.core ? ` (${String(state.core).toUpperCase()})` : ''}` : 'No active shared game yet.';
+  if (roomDebugNoteEl) {
+    roomDebugNoteEl.textContent = Array.isArray(state?.participantSnapshot) && state.participantSnapshot.length
+      ? `Discord currently reports ${state.participantSnapshot.length} connected participant(s) in this Activity instance.`
+      : 'Discord participant snapshots will show up here once the SDK reports them.';
+  }
+
+  if (roomSlotSummaryEl) {
+    roomSlotSummaryEl.innerHTML = '';
+    const slots = state?.slots || {};
+    ['p1', 'p2', 'p3', 'p4'].forEach((slot) => {
+      const occupant = state?.members?.find((member) => member.clientId === slots[slot]);
+      roomSlotSummaryEl.appendChild(createRoomChip(`${slot.toUpperCase()}: ${occupant?.displayName || 'open'}`, !occupant));
+    });
+  }
+
+  if (requestSeatButtonEl) {
+    requestSeatButtonEl.disabled = !roomId || !viewer || viewer.isHost === true || Boolean(viewer.playerSlot);
+  }
+  if (refreshRoomButtonEl) refreshRoomButtonEl.disabled = !roomId;
+
+  renderRoomParticipants(state);
+}
+
+async function refreshDiscordRoomParticipants() {
+  if (!discordSdkInstance?.commands?.getInstanceConnectedParticipants) return;
+  try {
+    const payload = await discordSdkInstance.commands.getInstanceConnectedParticipants();
+    discordRoomParticipants = sanitizeRoomParticipantList(payload?.participants || payload || []);
+  } catch (error) {
+    console.error('Discord room participant fetch failed', error);
+  }
+}
+
+async function syncRoomState(reason = 'poll') {
+  const roomId = getEffectiveRoomId();
+  if (!roomId) {
+    renderRoomState();
+    return null;
+  }
+
+  await refreshDiscordRoomParticipants();
+
+  try {
+    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/sync`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        clientId: roomViewerId,
+        displayName: roomViewerName,
+        instanceId: discordInstanceId || roomId,
+        core,
+        gameId: currentRequestedGameId(),
+        gameTitle: currentRequestedGameTitle(),
+        launched,
+        participants: discordRoomParticipants,
+        reason,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    multiplayerRoomState = await response.json();
+    renderRoomState(multiplayerRoomState);
+    return multiplayerRoomState;
+  } catch (error) {
+    console.error('Room sync failed', error);
+    if (roomSummaryEl) roomSummaryEl.textContent = 'Room sync failed right now. The Worker/Durable Object path may need deployment first.';
+    renderRoomParticipants(null);
+    return null;
+  }
+}
+
+function startRoomSyncLoop() {
+  if (roomSyncTimer) clearInterval(roomSyncTimer);
+  if (!shouldShowRoomPanel()) {
+    renderRoomState();
+    return;
+  }
+  renderRoomState();
+  syncRoomState('boot');
+  roomSyncTimer = window.setInterval(() => {
+    syncRoomState('poll');
+  }, 5000);
+}
+
+async function assignRoomSlot(targetId, slot) {
+  const roomId = getEffectiveRoomId();
+  if (!roomId) return;
+  try {
+    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        actorId: roomViewerId,
+        targetId,
+        slot,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    multiplayerRoomState = await response.json();
+    renderRoomState(multiplayerRoomState);
+  } catch (error) {
+    console.error('Room slot assignment failed', error);
+    setStatus('Slot assignment failed. Make sure the latest Worker build is deployed with the room Durable Object binding.');
+  }
+}
+
+async function requestRoomSeat(slot = 'p2') {
+  const roomId = getEffectiveRoomId();
+  if (!roomId) return;
+  try {
+    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        clientId: roomViewerId,
+        slot,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    multiplayerRoomState = await response.json();
+    renderRoomState(multiplayerRoomState);
+    setStatus('Seat request sent. The host can now promote you from spectator to an active player slot.');
+  } catch (error) {
+    console.error('Seat request failed', error);
+    setStatus('Could not send a seat request right now.');
+  }
+}
+
 function slugifyTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -582,6 +887,7 @@ function setSelectedGame(chosen) {
     }
   }
   syncLaunchState();
+  if (shouldShowRoomPanel()) syncRoomState('selection');
 }
 
 function applyRequestedGame() {
@@ -776,6 +1082,7 @@ buttonEl?.addEventListener('click', () => {
     : '';
   setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}${embeddedFeatureNote}`);
   syncLaunchState();
+  if (shouldShowRoomPanel()) syncRoomState('launch');
 });
 
 function toggleEmbeddedFocusMode() {
@@ -804,6 +1111,14 @@ fullscreenButtonEl?.addEventListener('click', async () => {
 embeddedFocusButtonEl?.addEventListener('click', () => {
   if (!frameEl || !launched) return;
   toggleEmbeddedFocusMode();
+});
+
+requestSeatButtonEl?.addEventListener('click', () => {
+  requestRoomSeat('p2');
+});
+
+refreshRoomButtonEl?.addEventListener('click', () => {
+  syncRoomState('manual-refresh');
 });
 
 popoutButtonEl?.addEventListener('click', () => {
@@ -844,5 +1159,6 @@ loadLibrary().then(() => {
 });
 
 window.addEventListener('beforeunload', () => {
+  if (roomSyncTimer) clearInterval(roomSyncTimer);
   if (objectUrl) URL.revokeObjectURL(objectUrl);
 });

@@ -128,6 +128,80 @@ select option {
 .warning-box strong {
   color: #fff2b3;
 }
+.room-box {
+  display: grid;
+  gap: 12px;
+}
+.room-box strong {
+  color: var(--text);
+}
+.room-stack {
+  display: grid;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+.room-slot-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.room-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid #305740;
+  background: rgba(255, 255, 255, 0.03);
+  color: #b7f5ce;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.room-chip.warning {
+  border-color: #6a5a1f;
+  color: #fff0b0;
+  background: rgba(60, 46, 14, 0.6);
+}
+.room-participants {
+  display: grid;
+  gap: 10px;
+}
+.room-member {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #274633;
+  background: rgba(7, 16, 10, 0.58);
+}
+.room-member-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.room-member-name {
+  font-weight: 700;
+}
+.room-member-meta,
+.room-discord-snapshot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.room-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.room-member-actions .button,
+.room-actions .button {
+  min-height: 36px;
+  padding: 0 12px;
+}
+.room-discord-snapshot {
+  margin-top: 4px;
+}
 
 .game-frame {
   min-height: 720px;

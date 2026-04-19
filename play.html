@@ -85,6 +85,25 @@
         </div>
         <div class="note-box warning-box" id="embeddedWarning" hidden></div>
         <div class="note-box" id="pspRuntimeInfo" hidden></div>
+        <div class="note-box room-box" id="roomPanel" hidden>
+          <strong>Shared room, Phase 0</strong>
+          <p class="subtle" id="roomSummary">Waiting for room identity…</p>
+          <div class="room-stack">
+            <div><strong>Room:</strong> <span id="roomInstanceId">Waiting…</span></div>
+            <div><strong>You:</strong> <span id="roomViewerState">Waiting…</span></div>
+            <div><strong>Host:</strong> <span id="roomHostState">Waiting…</span></div>
+            <div><strong>Game:</strong> <span id="roomGameState">No active shared game yet.</span></div>
+          </div>
+          <div class="room-slot-row" id="roomSlotSummary"></div>
+          <div class="button-row room-actions">
+            <button id="requestSeatButton" class="button" type="button" disabled>Request P2</button>
+            <button id="refreshRoomButton" class="button" type="button" disabled>Refresh room</button>
+          </div>
+          <div class="room-participants" id="roomParticipants">
+            <p class="subtle">Waiting for room members…</p>
+          </div>
+          <p class="subtle" id="roomDebugNote">This is the room-control layer first. Actual synchronized multiplayer is the next hard step.</p>
+        </div>
         <div class="note-box" id="systemCaveat"></div>
       </article>
 

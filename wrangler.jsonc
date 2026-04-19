@@ -12,6 +12,22 @@
   "vars": {
     "R2_PUBLIC_BASE_URL": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev"
   },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MULTIPLAYER_ROOMS",
+        "class_name": "ArcadeRoom"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-multiplayer-rooms",
+      "new_sqlite_classes": [
+        "ArcadeRoom"
+      ]
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

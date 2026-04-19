@@ -2,11 +2,23 @@ const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
+const activityInstanceIdEl = document.getElementById('activityInstanceId');
+const activityParticipantCountEl = document.getElementById('activityParticipantCount');
 const libraryStatsEl = document.getElementById('libraryStats');
 const featuredLaunchesEl = document.getElementById('featuredLaunches');
 const systemShelfGridEl = document.getElementById('systemShelfGrid');
 const activityBestBetsEl = document.getElementById('activityBestBets');
 const browserFirstLaneEl = document.getElementById('browserFirstLane');
+const multiplayerLabEl = document.getElementById('multiplayerLab');
+
+const activityState = {
+  insideDiscord: false,
+  clientId: DEFAULT_DISCORD_CLIENT_ID,
+  discordSdk: null,
+  instanceId: '',
+  participants: [],
+};
+let latestLibrary = null;
 
 const SYSTEM_META = {
   gb: { label: 'GB/GBC', tone: 'Very clean Activity fit', browserFirst: false },
@@ -66,6 +78,7 @@ function buildPlayerHref(core, options = {}) {
   params.set('core', core);
   if (options.game) params.set('game', slugifyTitle(options.game));
   if (options.launch) params.set('launch', '1');
+  if (options.multiplayer) params.set('multiplayer', '1');
   if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
   if (options.activity !== false && core !== 'psp') params.set('activity', '1');
   return `/play?${params.toString()}`;
@@ -123,11 +136,38 @@ function firstGame(library, core) {
   return (library[core] || [])[0] || null;
 }
 
+function renderMultiplayerLab(library) {
+  if (!multiplayerLabEl) return;
+  multiplayerLabEl.innerHTML = '';
+
+  const smash = findGame(library, 'n64', 'Super Smash Bros.') || firstGame(library, 'n64');
+  const roomCopy = activityState.instanceId
+    ? `This Activity instance is ${activityState.instanceId}. Anyone who joins this instance should land in the same shared room context.`
+    : 'Discord has not handed us the instance id yet, but the shared-room launch path is already wired for the same-instance test.';
+
+  multiplayerLabEl.appendChild(createTile({
+    title: smash?.title || 'Phase 0 Smash test room',
+    body: `${roomCopy} Joiners should begin as watch-only, and the host-side player page now has the first room panel and slot assignment groundwork.`,
+    badges: [
+      { label: 'Phase 0' },
+      { label: 'N64' },
+      { label: 'Watch-only joins' },
+    ],
+    actions: [
+      { label: 'Launch shared Smash test', href: buildPlayerHref('n64', { game: smash?.title || 'Super Smash Bros.', launch: true, multiplayer: true, embedded: true, activity: true }), primary: true },
+      { label: 'Open N64 shelf', href: buildPlayerHref('n64', { embedded: true, activity: true }) },
+    ],
+  }));
+}
+
 function renderLibrary(library) {
+  latestLibrary = library;
   const systemKeys = Object.keys(SYSTEM_META).filter((key) => Array.isArray(library[key]) && library[key].length > 0);
   const totalGames = systemKeys.reduce((sum, key) => sum + library[key].length, 0);
   setText(libraryStatsEl, `${systemKeys.length} systems, ${totalGames} curated games live.`);
   setText(statusEl, `Discord game hub loaded. ${totalGames} curated games are live across ${systemKeys.length} systems, with lighter shelves kept in Discord and PSP split into browser-first mode.`);
+
+  renderMultiplayerLab(library);
 
   systemShelfGridEl.innerHTML = '';
   systemKeys.forEach((core) => {
@@ -221,17 +261,49 @@ async function loadLibrary() {
   }
 }
 
+function sanitizeParticipantList(rawParticipants) {
+  return Array.isArray(rawParticipants)
+    ? rawParticipants.map((entry) => ({
+        id: String(entry?.id || entry?.userId || entry?.user_id || '').trim(),
+        displayName: String(entry?.displayName || entry?.global_name || entry?.globalName || entry?.username || entry?.nick || entry?.name || 'Unknown player').trim(),
+      })).filter((entry) => entry.id || entry.displayName)
+    : [];
+}
+
+async function refreshDiscordParticipants() {
+  if (!activityState.discordSdk?.commands?.getInstanceConnectedParticipants) return;
+  try {
+    const payload = await activityState.discordSdk.commands.getInstanceConnectedParticipants();
+    const participants = sanitizeParticipantList(payload?.participants || payload || []);
+    activityState.participants = participants;
+    setText(activityParticipantCountEl, participants.length ? `${participants.length} connected` : 'No participants reported yet.');
+  } catch (error) {
+    console.error('Discord participant fetch failed', error);
+    setText(activityParticipantCountEl, 'Could not read participants yet.');
+  }
+}
+
 async function connectDiscord(clientId, insideDiscord) {
+  activityState.clientId = clientId;
+  activityState.insideDiscord = insideDiscord;
+
   if (!insideDiscord) {
     setText(discordAuthStateEl, 'Standalone browser preview, Discord SDK not required.');
+    setText(activityInstanceIdEl, 'Standalone preview, no Discord instance id.');
+    setText(activityParticipantCountEl, 'Standalone preview.');
     return;
   }
 
   try {
     const { DiscordSDK } = await import('/assets/vendor/discord-embedded-app-sdk.bundle.mjs');
     const discordSdk = new DiscordSDK(clientId);
+    activityState.discordSdk = discordSdk;
+    activityState.instanceId = String(discordSdk.instanceId || '').trim();
+    setText(activityInstanceIdEl, activityState.instanceId || 'Discord SDK connected, but instance id was blank.');
     await discordSdk.ready();
     setText(discordAuthStateEl, 'Discord SDK connected.');
+    await refreshDiscordParticipants();
+    if (latestLibrary) renderMultiplayerLab(latestLibrary);
   } catch (error) {
     console.error('Discord Activity SDK init failed', error);
     setText(discordAuthStateEl, 'SDK init failed. Check the Activity portal mappings and client ID.');
