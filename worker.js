@@ -423,7 +423,25 @@ export default {
     }
 
     if (url.pathname === '/') {
-      const rewritten = new URL('/activity', url);
+      const rewritten = new URL('/activity.html', url);
+      return env.ASSETS.fetch(new Request(rewritten, request));
+    }
+
+    if (url.pathname === '/activity') {
+      const rewritten = new URL('/activity.html', url);
+      rewritten.search = url.search;
+      return env.ASSETS.fetch(new Request(rewritten, request));
+    }
+
+    if (url.pathname === '/play') {
+      const rewritten = new URL('/play.html', url);
+      rewritten.search = url.search;
+      return env.ASSETS.fetch(new Request(rewritten, request));
+    }
+
+    if (url.pathname === '/psp-debug') {
+      const rewritten = new URL('/psp-debug.html', url);
+      rewritten.search = url.search;
       return env.ASSETS.fetch(new Request(rewritten, request));
     }
 

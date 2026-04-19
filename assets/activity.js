@@ -81,7 +81,7 @@ function buildPlayerHref(core, options = {}) {
   if (options.multiplayer) params.set('multiplayer', '1');
   if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
   if (options.activity !== false && core !== 'psp') params.set('activity', '1');
-  return `/play?${params.toString()}`;
+  return `/play.html?${params.toString()}`;
 }
 
 function createTile({ title, body, badges = [], actions = [] }) {
@@ -180,7 +180,7 @@ function renderLibrary(library) {
     if (meta.warning) badges.push({ label: 'Heads up', warning: true });
     const actions = meta.browserFirst
       ? [
-          { label: `Open ${meta.label} in browser`, href: `/play?core=${core}`, primary: true, external: true },
+          { label: `Open ${meta.label} in browser`, href: `/play.html?core=${core}`, primary: true, external: true },
         ]
       : [
           { label: `Open ${meta.label} shelf`, href: buildPlayerHref(core, { embedded: true, activity: true }), primary: true },
@@ -242,7 +242,7 @@ function renderLibrary(library) {
       ],
       actions: [
         { label: 'Open in browser', href: buildPlayerHref(core, { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true },
-        { label: `Open ${meta.label} shelf`, href: `/play?core=${core}`, external: true },
+        { label: `Open ${meta.label} shelf`, href: `/play.html?core=${core}`, external: true },
       ],
     }));
   });

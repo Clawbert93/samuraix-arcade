@@ -17,14 +17,14 @@
   <main class="shell player-shell">
     <section class="card compact embedded-hubbar">
       <div class="embedded-hubbar-row">
-        <a class="button" href="/activity?discord=1">Back to Discord hub</a>
-        <a class="button" href="/play?core=gb&embedded=1&activity=1">GB/GBC</a>
-        <a class="button" href="/play?core=snes&embedded=1&activity=1">SNES</a>
-        <a class="button" href="/play?core=nds&embedded=1&activity=1">DS</a>
-        <a class="button" href="/play?core=gba&embedded=1&activity=1">GBA</a>
-        <a class="button" href="/play?core=n64&embedded=1&activity=1">N64</a>
-        <a class="button" href="/play?core=psx&embedded=1&activity=1">PS1</a>
-        <a class="button" href="/play?core=psp">PSP browser</a>
+        <a class="button" href="/activity.html?discord=1">Back to Discord hub</a>
+        <a class="button" href="/play.html?core=gb&embedded=1&activity=1">GB/GBC</a>
+        <a class="button" href="/play.html?core=snes&embedded=1&activity=1">SNES</a>
+        <a class="button" href="/play.html?core=nds&embedded=1&activity=1">DS</a>
+        <a class="button" href="/play.html?core=gba&embedded=1&activity=1">GBA</a>
+        <a class="button" href="/play.html?core=n64&embedded=1&activity=1">N64</a>
+        <a class="button" href="/play.html?core=psx&embedded=1&activity=1">PS1</a>
+        <a class="button" href="/play.html?core=psp">PSP browser</a>
       </div>
     </section>
 
@@ -34,13 +34,13 @@
       <p id="systemBlurb" class="lede"></p>
       <div class="button-row">
         <a class="button" href="/arcade">Full arcade</a>
-        <a class="button" href="/play?core=gb">GB/GBC</a>
-        <a class="button" href="/play?core=snes">SNES</a>
-        <a class="button" href="/play?core=nds">DS</a>
-        <a class="button" href="/play?core=gba">GBA</a>
-        <a class="button" href="/play?core=n64">N64</a>
-        <a class="button" href="/play?core=psx">PS1</a>
-        <a class="button" href="/play?core=psp">PSP</a>
+        <a class="button" href="/play.html?core=gb">GB/GBC</a>
+        <a class="button" href="/play.html?core=snes">SNES</a>
+        <a class="button" href="/play.html?core=nds">DS</a>
+        <a class="button" href="/play.html?core=gba">GBA</a>
+        <a class="button" href="/play.html?core=n64">N64</a>
+        <a class="button" href="/play.html?core=psx">PS1</a>
+        <a class="button" href="/play.html?core=psp">PSP</a>
       </div>
     </section>
 
@@ -53,15 +53,6 @@
           <select id="gameSelect"></select>
         </label>
         <p class="subtle" id="gameNotes"></p>
-
-        <label class="field" id="pspPresetWrap" hidden>
-          <span>PSP launch mode</span>
-          <select id="pspPreset">
-            <option value="quality">Quality</option>
-            <option value="max-performance" selected>Max performance</option>
-          </select>
-        </label>
-        <p class="subtle" id="pspPresetNotes" hidden></p>
 
         <label class="field" id="embeddedFocusWrap" hidden>
           <span>Discord view</span>
@@ -79,6 +70,15 @@
           <button id="popoutButton" class="button" type="button">Open in browser</button>
         </div>
         <p class="subtle" id="launchStatus">Choose a curated game or upload a file to start.</p>
+
+        <label class="field" id="pspPresetWrap" hidden>
+          <span>PSP launch mode</span>
+          <select id="pspPreset">
+            <option value="quality">Quality</option>
+            <option value="max-performance" selected>Max performance</option>
+          </select>
+        </label>
+        <p class="subtle" id="pspPresetNotes" hidden></p>
 
         <div class="note-box">
           <strong>Saves:</strong> This free build keeps saves on this browser and device only.

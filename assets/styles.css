@@ -12,6 +12,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -208,7 +209,7 @@ select option {
   border-radius: 18px;
   border: 1px solid #21412f;
   background: #030705;
-  overflow: hidden;
+  overflow: auto;
   touch-action: manipulation;
 }
 .game-frame.is-fullscreen {
@@ -233,12 +234,25 @@ select option {
   touch-action: manipulation;
 }
 
+#game canvas,
+#game iframe,
+#game > div {
+  max-width: 100% !important;
+}
+
 #game canvas {
   touch-action: none;
+  display: block;
+  margin: 0 auto;
+  height: auto !important;
+  max-height: 100%;
 }
 
 #game iframe {
   touch-action: manipulation;
+  display: block;
+  margin: 0 auto;
+  max-height: 100%;
 }
 .game-frame.is-fullscreen #game {
   min-height: 100vh;
@@ -408,7 +422,7 @@ select option {
 }
 body.embedded-focus-mode,
 html.embedded-focus-mode {
-  overflow: hidden;
+  overflow-x: hidden;
 }
 .embedded-mode.embedded-focus-mode .embedded-hubbar {
   margin-bottom: 6px;
@@ -423,6 +437,18 @@ html.embedded-focus-mode {
 .embedded-mode.embedded-focus-mode .game-frame,
 .embedded-mode.embedded-focus-mode #game {
   min-height: calc(100vh - 82px);
+}
+.embedded-mode.embedded-focus-mode .game-frame {
+  overflow: auto;
+}
+.game-frame.is-fullscreen {
+  overflow: auto;
+}
+.game-frame.is-fullscreen #game,
+.embedded-mode.embedded-focus-mode #game {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 860px) {

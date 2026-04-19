@@ -87,7 +87,7 @@ const requestedGameKey = String(params.get('game') || '').trim().toLowerCase();
 const CANONICAL_ARCADE_ORIGIN = 'https://samuraix-arcade.roberteverland22.workers.dev';
 
 if (core === 'psp' && window.location.hostname === 'clawbert93.github.io') {
-  const target = new URL(`${CANONICAL_ARCADE_ORIGIN}/play`);
+  const target = new URL(`${CANONICAL_ARCADE_ORIGIN}/play.html`);
   for (const [key, value] of params.entries()) target.searchParams.append(key, value);
   target.searchParams.set('core', 'psp');
   window.location.replace(target.toString());
