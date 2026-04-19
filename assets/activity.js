@@ -88,16 +88,111 @@ function buildPlayerHref(core, options = {}) {
   return `/play?${params.toString()}`;
 }
 
+function buildActivityRouteHref(core, options = {}) {
+  const params = new URLSearchParams();
+  params.set('core', core);
+  if (options.game) params.set('game', slugifyTitle(options.game));
+  if (options.launch) params.set('launch', '1');
+  if (options.multiplayer) params.set('multiplayer', '1');
+  const roomId = String(options.room || activityState.instanceId || '').trim();
+  if (roomId) params.set('room', roomId);
+  const clientId = String(options.clientId || activityState.clientId || '').trim();
+  if (clientId && core !== 'psp') params.set('client_id', clientId);
+  return `/activity?${params.toString()}`;
+}
+
+function buildLaunchHref(core, options = {}) {
+  if (activityState.insideDiscord && core !== 'psp') {
+    return buildActivityRouteHref(core, options);
+  }
+  return buildPlayerHref(core, options);
+}
+
 function syncHeroActionLinks() {
   const heroActionsEl = document.getElementById('activityHeroActions');
   if (!heroActionsEl) return;
 
-  heroActionsEl.querySelectorAll('a[href*="/play"]').forEach((link) => {
+  heroActionsEl.querySelectorAll('a[href*="/play"], a[href*="/activity?"]').forEach((link) => {
     const parsed = new URL(link.getAttribute('href') || '', window.location.origin);
     const core = parsed.searchParams.get('core');
     if (!core) return;
-    link.href = buildPlayerHref(core, { embedded: true, activity: true });
+    link.href = buildLaunchHref(core, {
+      game: parsed.searchParams.get('game') || '',
+      launch: parsed.searchParams.get('launch') === '1',
+      multiplayer: parsed.searchParams.get('multiplayer') === '1',
+      embedded: true,
+      activity: true,
+    });
   });
+}
+
+function renderEmbeddedPlayerMode(params) {
+  const core = String(params.get('core') || '').trim();
+  if (!core) return false;
+
+  const mainEl = document.querySelector('main.activity-shell');
+  if (!mainEl) return false;
+
+  const shellHref = `/activity?${new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {}).toString()}`.replace(/\?$/, '');
+  const playerHref = buildPlayerHref(core, {
+    game: params.get('game') || '',
+    launch: params.get('launch') === '1',
+    multiplayer: params.get('multiplayer') === '1',
+    room: params.get('room') || activityState.instanceId || '',
+    clientId: params.get('client_id') || activityState.clientId || '',
+    embedded: true,
+    activity: true,
+  });
+
+  mainEl.innerHTML = '';
+
+  const card = document.createElement('section');
+  card.className = 'card activity-section';
+  card.style.minHeight = 'calc(100vh - 2rem)';
+  card.style.display = 'flex';
+  card.style.flexDirection = 'column';
+  card.style.gap = '0.75rem';
+
+  const topRow = document.createElement('div');
+  topRow.className = 'activity-section-head';
+
+  const titleWrap = document.createElement('div');
+  const eyebrow = document.createElement('p');
+  eyebrow.className = 'eyebrow';
+  eyebrow.textContent = '🎮 Activity player';
+  const heading = document.createElement('h2');
+  heading.textContent = `${String(core).toUpperCase()} player`;
+  const note = document.createElement('p');
+  note.className = 'subtle';
+  note.textContent = 'Staying on the Discord-approved Activity route, loading the player inside this page for mobile compatibility.';
+  titleWrap.appendChild(eyebrow);
+  titleWrap.appendChild(heading);
+  titleWrap.appendChild(note);
+
+  const backLink = document.createElement('a');
+  backLink.className = 'button';
+  backLink.href = shellHref || '/activity';
+  backLink.textContent = 'Back to hub';
+
+  topRow.appendChild(titleWrap);
+  topRow.appendChild(backLink);
+  card.appendChild(topRow);
+
+  const frame = document.createElement('iframe');
+  frame.src = playerHref;
+  frame.title = `${String(core).toUpperCase()} embedded player`;
+  frame.setAttribute('allow', 'autoplay; clipboard-read; clipboard-write; fullscreen; gamepad');
+  frame.setAttribute('allowfullscreen', 'true');
+  frame.style.width = '100%';
+  frame.style.flex = '1 1 auto';
+  frame.style.minHeight = '80vh';
+  frame.style.border = '0';
+  frame.style.borderRadius = '16px';
+  frame.style.background = '#050816';
+  card.appendChild(frame);
+
+  mainEl.appendChild(card);
+  return true;
 }
 
 function createTile({ title, body, badges = [], actions = [] }) {
@@ -170,8 +265,8 @@ function renderMultiplayerLab(library) {
       { label: 'Watch-only joins' },
     ],
     actions: [
-      { label: 'Launch shared Smash test', href: buildPlayerHref('n64', { game: smash?.title || 'Super Smash Bros.', launch: true, multiplayer: true, embedded: true, activity: true }), primary: true },
-      { label: 'Open N64 shelf', href: buildPlayerHref('n64', { embedded: true, activity: true }) },
+      { label: 'Launch shared Smash test', href: buildLaunchHref('n64', { game: smash?.title || 'Super Smash Bros.', launch: true, multiplayer: true, embedded: true, activity: true }), primary: true },
+      { label: 'Open N64 shelf', href: buildLaunchHref('n64', { embedded: true, activity: true }) },
     ],
   }));
 }
@@ -199,7 +294,7 @@ function renderLibrary(library) {
           { label: `Open ${meta.label} in browser`, href: `/play?core=${core}`, primary: true, external: true },
         ]
       : [
-          { label: `Open ${meta.label} shelf`, href: buildPlayerHref(core, { embedded: true, activity: true }), primary: true },
+          { label: `Open ${meta.label} shelf`, href: buildLaunchHref(core, { embedded: true, activity: true }), primary: true },
         ];
     systemShelfGridEl.appendChild(createTile({
       title: meta.label,
@@ -224,7 +319,7 @@ function renderLibrary(library) {
       actions: [
         meta.browserFirst
           ? { label: 'Open in browser', href: buildPlayerHref(Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry)), { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true }
-          : { label: 'Launch now', href: buildPlayerHref(Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry)), { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
+          : { label: 'Launch now', href: buildLaunchHref(Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry)), { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
       ],
     }));
   });
@@ -240,8 +335,8 @@ function renderLibrary(library) {
         { label: 'Activity-ready' },
       ],
       actions: [
-        { label: 'Launch in Discord', href: buildPlayerHref(core, { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
-        { label: `Open ${meta.label} shelf`, href: buildPlayerHref(core, { embedded: true, activity: true }) },
+        { label: 'Launch in Discord', href: buildLaunchHref(core, { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
+        { label: `Open ${meta.label} shelf`, href: buildLaunchHref(core, { embedded: true, activity: true }) },
       ],
     }));
   });
@@ -338,7 +433,15 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const clientId = params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID;
   const insideDiscord = isEmbeddedContext() || params.get('discord') === '1';
+  activityState.clientId = clientId;
+  activityState.insideDiscord = insideDiscord;
   setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
+  syncHeroActionLinks();
+
+  if (renderEmbeddedPlayerMode(params)) {
+    await connectDiscord(clientId, insideDiscord);
+    return;
+  }
 
   await Promise.allSettled([
     connectDiscord(clientId, insideDiscord),
