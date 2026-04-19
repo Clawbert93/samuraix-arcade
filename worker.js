@@ -362,7 +362,41 @@ export class ArcadeRoom {
     }
 
     const pathname = url.pathname.replace(/\/$/, '');
+    const readQueryBody = () => {
+      let participants = [];
+      try {
+        const rawParticipants = String(url.searchParams.get('participants') || '').trim();
+        if (rawParticipants) participants = JSON.parse(rawParticipants);
+      } catch (error) {}
+      return {
+        actorId: url.searchParams.get('actorId') || '',
+        targetId: url.searchParams.get('targetId') || '',
+        clientId: url.searchParams.get('clientId') || '',
+        displayName: url.searchParams.get('displayName') || '',
+        instanceId: url.searchParams.get('instanceId') || '',
+        core: url.searchParams.get('core') || '',
+        gameId: url.searchParams.get('gameId') || '',
+        gameTitle: url.searchParams.get('gameTitle') || '',
+        slot: url.searchParams.get('slot') || '',
+        reason: url.searchParams.get('reason') || '',
+        launched: ['1', 'true', 'yes'].includes(String(url.searchParams.get('launched') || '').trim().toLowerCase()),
+        participants,
+      };
+    };
 
+    if (request.method === 'GET' && pathname.endsWith('/sync')) {
+      return json(await this.handleSync(readQueryBody()), 200, { 'access-control-allow-origin': '*' });
+    }
+    if (request.method === 'GET' && pathname.endsWith('/assign-slot')) {
+      const response = await this.handleAssign(readQueryBody());
+      response.headers.set('access-control-allow-origin', '*');
+      return response;
+    }
+    if (request.method === 'GET' && pathname.endsWith('/request-seat')) {
+      const response = await this.handleRequestSeat(readQueryBody());
+      response.headers.set('access-control-allow-origin', '*');
+      return response;
+    }
     if (request.method === 'GET') {
       return json(this.publicState(url.searchParams.get('viewerId') || null), 200, { 'access-control-allow-origin': '*' });
     }

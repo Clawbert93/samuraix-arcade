@@ -872,30 +872,50 @@ async function syncRoomState(reason = 'poll') {
 
   await refreshDiscordRoomParticipants();
 
+  const payload = {
+    clientId: roomViewerId,
+    displayName: roomViewerName,
+    instanceId: discordInstanceId || roomId,
+    core,
+    gameId: currentRequestedGameId(),
+    gameTitle: currentRequestedGameTitle(),
+    launched,
+    participants: discordRoomParticipants,
+    reason,
+  };
+
   try {
-    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/sync`, {
+    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/sync`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        clientId: roomViewerId,
-        displayName: roomViewerName,
-        instanceId: discordInstanceId || roomId,
-        core,
-        gameId: currentRequestedGameId(),
-        gameTitle: currentRequestedGameTitle(),
-        launched,
-        participants: discordRoomParticipants,
-        reason,
-      }),
+      body: JSON.stringify(payload),
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    if (!response.ok) {
+      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/sync`, window.location.origin);
+      fallbackUrl.searchParams.set('clientId', payload.clientId);
+      fallbackUrl.searchParams.set('displayName', payload.displayName);
+      fallbackUrl.searchParams.set('instanceId', payload.instanceId);
+      fallbackUrl.searchParams.set('core', payload.core);
+      fallbackUrl.searchParams.set('gameId', payload.gameId);
+      fallbackUrl.searchParams.set('gameTitle', payload.gameTitle);
+      fallbackUrl.searchParams.set('launched', payload.launched ? '1' : '0');
+      fallbackUrl.searchParams.set('reason', payload.reason);
+      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
+    }
+
+    if (!response.ok) {
+      const details = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status}${details ? ` ${details}` : ''}`);
+    }
+
     multiplayerRoomState = await response.json();
     maybeApplyRoomSelectedGame(multiplayerRoomState);
     renderRoomState(multiplayerRoomState);
     return multiplayerRoomState;
   } catch (error) {
     console.error('Room sync failed', error);
-    if (roomSummaryEl) roomSummaryEl.textContent = 'Room sync failed right now. The Worker/Durable Object path may need deployment first.';
+    if (roomSummaryEl) roomSummaryEl.textContent = `Room sync failed right now. ${error?.message || 'The Worker/Durable Object path may need deployment first.'}`;
     renderRoomParticipants(null);
     return null;
   }
@@ -918,7 +938,7 @@ async function assignRoomSlot(targetId, slot) {
   const roomId = getEffectiveRoomId();
   if (!roomId) return;
   try {
-    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, {
+    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -927,12 +947,19 @@ async function assignRoomSlot(targetId, slot) {
         slot,
       }),
     });
+    if (!response.ok) {
+      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, window.location.origin);
+      fallbackUrl.searchParams.set('actorId', roomViewerId);
+      fallbackUrl.searchParams.set('targetId', targetId);
+      fallbackUrl.searchParams.set('slot', slot);
+      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     multiplayerRoomState = await response.json();
     renderRoomState(multiplayerRoomState);
   } catch (error) {
     console.error('Room slot assignment failed', error);
-    setStatus('Slot assignment failed. Make sure the latest Worker build is deployed with the room Durable Object binding.');
+    setStatus(`Slot assignment failed. ${error?.message || 'Make sure the latest Worker build is deployed with the room Durable Object binding.'}`);
   }
 }
 
@@ -940,7 +967,7 @@ async function requestRoomSeat(slot = 'p2') {
   const roomId = getEffectiveRoomId();
   if (!roomId) return;
   try {
-    const response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, {
+    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -948,13 +975,19 @@ async function requestRoomSeat(slot = 'p2') {
         slot,
       }),
     });
+    if (!response.ok) {
+      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, window.location.origin);
+      fallbackUrl.searchParams.set('clientId', roomViewerId);
+      fallbackUrl.searchParams.set('slot', slot);
+      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
+    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     multiplayerRoomState = await response.json();
     renderRoomState(multiplayerRoomState);
     setStatus('Seat request sent. The host can now promote you from spectator to an active player slot.');
   } catch (error) {
     console.error('Seat request failed', error);
-    setStatus('Could not send a seat request right now.');
+    setStatus(`Could not send a seat request right now. ${error?.message || ''}`.trim());
   }
 }
 
