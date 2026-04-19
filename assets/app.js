@@ -863,6 +863,49 @@ async function refreshDiscordRoomParticipants() {
   }
 }
 
+function buildRoomActionUrl(roomId, action, payload = {}) {
+  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, window.location.origin);
+  Object.entries(payload || {}).forEach(([key, value]) => {
+    if (value == null || value === '') return;
+    if (typeof value === 'boolean') {
+      url.searchParams.set(key, value ? '1' : '0');
+      return;
+    }
+    if (Array.isArray(value)) {
+      if (!value.length) return;
+      url.searchParams.set(key, JSON.stringify(value));
+      return;
+    }
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+}
+
+async function roomActionFetch(roomId, action, payload = {}) {
+  const queryUrl = buildRoomActionUrl(roomId, action, payload);
+  const preferQueryTransport = embeddedMode;
+
+  if (preferQueryTransport) {
+    let response = await fetch(queryUrl, { method: 'GET' });
+    if (response.ok) return response;
+    response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return response;
+  }
+
+  let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (response.ok) return response;
+  response = await fetch(queryUrl, { method: 'GET' });
+  return response;
+}
+
 async function syncRoomState(reason = 'poll') {
   const roomId = getEffectiveRoomId();
   if (!roomId) {
@@ -885,25 +928,7 @@ async function syncRoomState(reason = 'poll') {
   };
 
   try {
-    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/sync`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/sync`, window.location.origin);
-      fallbackUrl.searchParams.set('clientId', payload.clientId);
-      fallbackUrl.searchParams.set('displayName', payload.displayName);
-      fallbackUrl.searchParams.set('instanceId', payload.instanceId);
-      fallbackUrl.searchParams.set('core', payload.core);
-      fallbackUrl.searchParams.set('gameId', payload.gameId);
-      fallbackUrl.searchParams.set('gameTitle', payload.gameTitle);
-      fallbackUrl.searchParams.set('launched', payload.launched ? '1' : '0');
-      fallbackUrl.searchParams.set('reason', payload.reason);
-      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
-    }
-
+    const response = await roomActionFetch(roomId, 'sync', payload);
     if (!response.ok) {
       const details = await response.text().catch(() => '');
       throw new Error(`HTTP ${response.status}${details ? ` ${details}` : ''}`);
@@ -938,22 +963,11 @@ async function assignRoomSlot(targetId, slot) {
   const roomId = getEffectiveRoomId();
   if (!roomId) return;
   try {
-    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        actorId: roomViewerId,
-        targetId,
-        slot,
-      }),
+    const response = await roomActionFetch(roomId, 'assign-slot', {
+      actorId: roomViewerId,
+      targetId,
+      slot,
     });
-    if (!response.ok) {
-      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/assign-slot`, window.location.origin);
-      fallbackUrl.searchParams.set('actorId', roomViewerId);
-      fallbackUrl.searchParams.set('targetId', targetId);
-      fallbackUrl.searchParams.set('slot', slot);
-      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
-    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     multiplayerRoomState = await response.json();
     renderRoomState(multiplayerRoomState);
@@ -967,20 +981,10 @@ async function requestRoomSeat(slot = 'p2') {
   const roomId = getEffectiveRoomId();
   if (!roomId) return;
   try {
-    let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        clientId: roomViewerId,
-        slot,
-      }),
+    const response = await roomActionFetch(roomId, 'request-seat', {
+      clientId: roomViewerId,
+      slot,
     });
-    if (!response.ok) {
-      const fallbackUrl = new URL(`/api/rooms/${encodeURIComponent(roomId)}/request-seat`, window.location.origin);
-      fallbackUrl.searchParams.set('clientId', roomViewerId);
-      fallbackUrl.searchParams.set('slot', slot);
-      response = await fetch(fallbackUrl.toString(), { method: 'GET' });
-    }
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     multiplayerRoomState = await response.json();
     renderRoomState(multiplayerRoomState);
