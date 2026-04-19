@@ -863,8 +863,8 @@ async function refreshDiscordRoomParticipants() {
   }
 }
 
-function buildRoomActionUrl(roomId, action, payload = {}) {
-  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, window.location.origin);
+function buildRoomActionUrl(roomId, action, payload = {}, baseOrigin = window.location.origin) {
+  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, baseOrigin);
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value == null || value === '') return;
     if (typeof value === 'boolean') {
@@ -881,17 +881,95 @@ function buildRoomActionUrl(roomId, action, payload = {}) {
   return url.toString();
 }
 
+let roomBridgeFrame = null;
+let roomBridgeReadyPromise = null;
+let roomBridgeCounter = 0;
+const roomBridgePending = new Map();
+
+function normalizeBridgePayload(action, payload = {}) {
+  const compactPayload = { ...(payload || {}) };
+  if (action === 'sync') delete compactPayload.participants;
+  return compactPayload;
+}
+
+function handleRoomBridgeMessage(event) {
+  if (event.origin !== CANONICAL_ARCADE_ORIGIN) return;
+  const data = event.data;
+  if (!data || data.type !== 'samuraix-room-bridge-result' || !data.requestId) return;
+  const pending = roomBridgePending.get(data.requestId);
+  if (!pending) return;
+  roomBridgePending.delete(data.requestId);
+  pending.resolve(data);
+}
+
+function ensureRoomBridge() {
+  if (!embeddedMode) return Promise.resolve(null);
+  if (roomBridgeReadyPromise) return roomBridgeReadyPromise;
+
+  window.addEventListener('message', handleRoomBridgeMessage);
+  roomBridgeReadyPromise = new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    iframe.hidden = true;
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.tabIndex = -1;
+    iframe.src = `${CANONICAL_ARCADE_ORIGIN}/room-bridge.html`;
+    iframe.addEventListener('load', () => resolve(iframe), { once: true });
+    iframe.addEventListener('error', () => reject(new Error('Room bridge failed to load.')), { once: true });
+    document.body.appendChild(iframe);
+    roomBridgeFrame = iframe;
+  });
+  return roomBridgeReadyPromise;
+}
+
+async function roomActionFetchViaBridge(roomId, action, payload = {}) {
+  const iframe = await ensureRoomBridge();
+  if (!iframe?.contentWindow) throw new Error('Room bridge is not ready.');
+
+  const requestId = `room-bridge-${Date.now()}-${++roomBridgeCounter}`;
+  const result = await new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      roomBridgePending.delete(requestId);
+      reject(new Error('Room bridge timed out.'));
+    }, 12000);
+
+    roomBridgePending.set(requestId, {
+      resolve: (value) => {
+        window.clearTimeout(timeout);
+        resolve(value);
+      },
+    });
+
+    iframe.contentWindow.postMessage({
+      type: 'samuraix-room-bridge-request',
+      requestId,
+      roomId,
+      action,
+      payload: normalizeBridgePayload(action, payload),
+    }, CANONICAL_ARCADE_ORIGIN);
+  });
+
+  return new Response(result.body || '', {
+    status: Number(result.status) || 500,
+    headers: {
+      'content-type': result.contentType || 'text/plain; charset=utf-8',
+    },
+  });
+}
+
 async function roomActionFetch(roomId, action, payload = {}) {
   const preferQueryTransport = embeddedMode;
 
   if (preferQueryTransport) {
-    const compactPayload = { ...payload };
-    if (action === 'sync') delete compactPayload.participants;
-    const queryUrl = buildRoomActionUrl(roomId, action, compactPayload);
-    return fetch(queryUrl, {
-      method: 'GET',
-      cache: 'no-store',
-    });
+    try {
+      return await roomActionFetchViaBridge(roomId, action, payload);
+    } catch (error) {
+      console.warn('Room bridge failed, falling back to in-page fetch', error);
+      const queryUrl = buildRoomActionUrl(roomId, action, normalizeBridgePayload(action, payload));
+      return fetch(queryUrl, {
+        method: 'GET',
+        cache: 'no-store',
+      });
+    }
   }
 
   const queryUrl = buildRoomActionUrl(roomId, action, payload);

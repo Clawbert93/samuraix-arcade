@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SamuraiX Arcade Room Bridge</title>
+</head>
+<body>
+<script>
+function buildRoomActionUrl(roomId, action, payload = {}) {
+  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, window.location.origin);
+  Object.entries(payload || {}).forEach(([key, value]) => {
+    if (value == null || value === '') return;
+    if (typeof value === 'boolean') {
+      url.searchParams.set(key, value ? '1' : '0');
+      return;
+    }
+    if (Array.isArray(value)) {
+      if (!value.length) return;
+      url.searchParams.set(key, JSON.stringify(value));
+      return;
+    }
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+}
+
+window.addEventListener('message', async (event) => {
+  const data = event.data;
+  if (!data || data.type !== 'samuraix-room-bridge-request' || !data.requestId) return;
+
+  let status = 500;
+  let contentType = 'application/json; charset=utf-8';
+  let body = JSON.stringify({ error: 'Bridge request failed before fetch.' });
+
+  try {
+    const url = buildRoomActionUrl(data.roomId, data.action, data.payload || {});
+    const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+    status = response.status;
+    contentType = response.headers.get('content-type') || contentType;
+    body = await response.text();
+  } catch (error) {
+    body = JSON.stringify({
+      error: 'Bridge fetch failed.',
+      message: String(error && error.message ? error.message : error || 'Unknown bridge fetch error.'),
+    });
+  }
+
+  try {
+    event.source && event.source.postMessage({
+      type: 'samuraix-room-bridge-result',
+      requestId: data.requestId,
+      status,
+      contentType,
+      body,
+    }, event.origin || '*');
+  } catch (error) {}
+});
+</script>
+</body>
+</html>
