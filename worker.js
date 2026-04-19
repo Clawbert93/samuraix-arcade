@@ -446,8 +446,7 @@ export default {
     }
 
     if (url.pathname === '/arcade') {
-      const rewritten = new URL('/index.html', url);
-      return env.ASSETS.fetch(new Request(rewritten, request));
+      return Response.redirect(new URL('/index.html', url), 302);
     }
 
     return env.ASSETS.fetch(request);
