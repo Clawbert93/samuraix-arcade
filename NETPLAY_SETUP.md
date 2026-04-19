@@ -21,9 +21,9 @@ The Worker now exposes `/api/runtime-config` and reads these Wrangler vars:
 - `NETPLAY_SERVER_URL`
 - `NETPLAY_ICE_SERVERS_JSON`
 
-Current defaults in `wrangler.jsonc`:
+Current live value on this machine:
 
-- `NETPLAY_SERVER_URL`: blank
+- `NETPLAY_SERVER_URL`: `https://venus.tail69e201.ts.net:8443#`
 - `NETPLAY_ICE_SERVERS_JSON`: STUN-only starter list
 
 If `NETPLAY_SERVER_URL` is blank, the room UI still works, but real synchronized gameplay is not active yet.
@@ -48,7 +48,11 @@ Run the netplay server on a stable hostname, for example:
 - `https://netplay.samuraix-arcade.roberteverland22.workers.dev` is **not** enough by itself unless it is actually backed by a compatible long-lived netplay service
 - better shape: a small Node host or VPS, fronted by a real hostname
 
-Example target:
+Current machine-hosted stopgap target:
+
+- `https://venus.tail69e201.ts.net:8443#`
+
+Longer-term cleaner target:
 
 - `https://netplay.samuraixarcade.example`
 

@@ -11,7 +11,7 @@
   },
   "vars": {
     "R2_PUBLIC_BASE_URL": "https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev",
-    "NETPLAY_SERVER_URL": "",
+    "NETPLAY_SERVER_URL": "https://venus.tail69e201.ts.net:8443#",
     "NETPLAY_ICE_SERVERS_JSON": "[{\"urls\":\"stun:stun.l.google.com:19302\"},{\"urls\":\"stun:stun1.l.google.com:19302\"},{\"urls\":\"stun:stun2.l.google.com:19302\"}]"
   },
   "durable_objects": {
