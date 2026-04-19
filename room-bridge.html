@@ -53,7 +53,7 @@ window.addEventListener('message', async (event) => {
       status,
       contentType,
       body,
-    }, event.origin || '*');
+    }, '*');
   } catch (error) {}
 });
 </script>
