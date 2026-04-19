@@ -332,6 +332,24 @@ select option {
 .embedded-mode #game {
   min-height: calc(100vh - 120px);
 }
+body.embedded-focus-mode,
+html.embedded-focus-mode {
+  overflow: hidden;
+}
+.embedded-mode.embedded-focus-mode .embedded-hubbar {
+  margin-bottom: 6px;
+}
+.embedded-mode.embedded-focus-mode .player-grid {
+  grid-template-columns: 1fr;
+  margin-top: 6px;
+}
+.embedded-mode.embedded-focus-mode .controls-card {
+  display: none;
+}
+.embedded-mode.embedded-focus-mode .game-frame,
+.embedded-mode.embedded-focus-mode #game {
+  min-height: calc(100vh - 82px);
+}
 
 @media (max-width: 860px) {
   .two-up, .player-grid, .activity-grid, .activity-system-grid, .activity-game-grid { grid-template-columns: 1fr; }

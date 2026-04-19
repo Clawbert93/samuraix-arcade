@@ -485,13 +485,16 @@ function syncEmbeddedWarnings() {
 
   if (embeddedMode && core === 'psp') {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (recommended)';
+    if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fill window';
     if (buttonEl) buttonEl.textContent = 'Open PSP in browser';
     return;
   }
   if (embeddedMode) {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (fullscreen + save states)';
-  } else if (popoutButtonEl) {
-    popoutButtonEl.textContent = 'Open in browser';
+    if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fill window';
+  } else {
+    if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
+    if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fullscreen';
   }
   if (buttonEl) buttonEl.textContent = core === 'psp' ? 'Attempt launch (experimental)' : 'Launch';
 }
@@ -499,12 +502,23 @@ function syncEmbeddedWarnings() {
 function syncLaunchState() {
   if (!buttonEl) return;
   buttonEl.disabled = !(selectedFile || selectedGame) || launched;
-  if (fullscreenButtonEl) fullscreenButtonEl.disabled = embeddedMode || !launched;
+  if (fullscreenButtonEl) fullscreenButtonEl.disabled = !launched;
+}
+
+function setEmbeddedFocusMode(enabled) {
+  document.documentElement.classList.toggle('embedded-focus-mode', enabled);
+  document.body.classList.toggle('embedded-focus-mode', enabled);
+  if (fullscreenButtonEl) {
+    fullscreenButtonEl.textContent = enabled ? 'Exit focus mode' : 'Fill window';
+  }
 }
 
 function syncFullscreenState() {
   if (!frameEl) return;
   frameEl.classList.toggle('is-fullscreen', document.fullscreenElement === frameEl);
+  if (fullscreenButtonEl && !embeddedMode) {
+    fullscreenButtonEl.textContent = document.fullscreenElement === frameEl ? 'Exit fullscreen' : 'Fullscreen';
+  }
 }
 
 function slugifyTitle(value) {
@@ -755,6 +769,16 @@ buttonEl?.addEventListener('click', () => {
 
 fullscreenButtonEl?.addEventListener('click', async () => {
   if (!frameEl || !launched) return;
+
+  if (embeddedMode) {
+    const enabled = !document.body.classList.contains('embedded-focus-mode');
+    setEmbeddedFocusMode(enabled);
+    setStatus(enabled
+      ? 'Focus mode enabled. The Discord player is now filling the Activity window more aggressively.'
+      : 'Focus mode off. Restored the normal split layout.');
+    return;
+  }
+
   try {
     if (document.fullscreenElement === frameEl) {
       await document.exitFullscreen();
