@@ -350,11 +350,14 @@ async function connectDiscordSdkIfEmbedded() {
     discordInstanceId = String(discordSdk.instanceId || '').trim();
     window.__samuraixDiscordSdk = discordSdk;
     await discordSdk.ready();
+    discordInstanceId = String(discordSdk.instanceId || discordInstanceId || '').trim();
+    syncRoomAwareNavLinks();
     await refreshDiscordRoomParticipants();
   } catch (error) {
     console.error('Discord player SDK init failed', error);
   }
 
+  syncRoomAwareNavLinks();
   startRoomSyncLoop();
 }
 
@@ -592,6 +595,44 @@ function getEffectiveRoomId() {
 
 function shouldShowRoomPanel() {
   return embeddedMode || multiplayerRequested || Boolean(getEffectiveRoomId());
+}
+
+function syncRoomAwareNavLinks() {
+  const roomId = String(getEffectiveRoomId() || '').trim();
+  const clientId = String(params.get('client_id') || DEFAULT_DISCORD_CLIENT_ID || '').trim();
+  const selectors = [
+    '.embedded-hubbar a[href]',
+    '.player-hero a[href]',
+  ];
+
+  document.querySelectorAll(selectors.join(',')).forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    if (!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('#')) return;
+
+    const target = new URL(href, window.location.origin);
+    if (target.pathname === '/play' || target.pathname.endsWith('/play.html')) {
+      const targetCore = String(target.searchParams.get('core') || '').trim().toLowerCase();
+      if (roomId) target.searchParams.set('room', roomId);
+      if (multiplayerRequested) target.searchParams.set('multiplayer', '1');
+      if (embeddedMode && targetCore !== 'psp') target.searchParams.set('embedded', '1');
+      if (params.get('activity') === '1' && targetCore !== 'psp') target.searchParams.set('activity', '1');
+      if (clientId && targetCore !== 'psp') target.searchParams.set('client_id', clientId);
+      link.href = `${target.pathname}${target.search}`;
+      return;
+    }
+
+    if (target.pathname === '/activity' || target.pathname.endsWith('/activity.html')) {
+      if (clientId) target.searchParams.set('client_id', clientId);
+      if (params.get('discord') === '1' || embeddedMode) target.searchParams.set('discord', '1');
+      link.href = `${target.pathname}${target.search}`;
+      return;
+    }
+
+    if (target.pathname === '/index.html' || target.pathname === '/arcade' || target.pathname === '/index') {
+      if (roomId) target.searchParams.set('room', roomId);
+      link.href = `${target.pathname}${target.search}`;
+    }
+  });
 }
 
 function currentRequestedGameId() {
@@ -1232,6 +1273,7 @@ pspPresetEl?.addEventListener('change', () => {
 installKeyboardFocusBridge();
 syncPspPresetUi();
 syncEmbeddedWarnings();
+syncRoomAwareNavLinks();
 
 Promise.allSettled([
   loadRuntimeConfig(),

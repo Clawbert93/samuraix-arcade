@@ -81,7 +81,23 @@ function buildPlayerHref(core, options = {}) {
   if (options.multiplayer) params.set('multiplayer', '1');
   if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
   if (options.activity !== false && core !== 'psp') params.set('activity', '1');
+  const roomId = String(options.room || activityState.instanceId || '').trim();
+  if (roomId) params.set('room', roomId);
+  const clientId = String(options.clientId || activityState.clientId || '').trim();
+  if (clientId && core !== 'psp') params.set('client_id', clientId);
   return `/play?${params.toString()}`;
+}
+
+function syncHeroActionLinks() {
+  const heroActionsEl = document.getElementById('activityHeroActions');
+  if (!heroActionsEl) return;
+
+  heroActionsEl.querySelectorAll('a[href*="/play"]').forEach((link) => {
+    const parsed = new URL(link.getAttribute('href') || '', window.location.origin);
+    const core = parsed.searchParams.get('core');
+    if (!core) return;
+    link.href = buildPlayerHref(core, { embedded: true, activity: true });
+  });
 }
 
 function createTile({ title, body, badges = [], actions = [] }) {
@@ -291,6 +307,7 @@ async function connectDiscord(clientId, insideDiscord) {
     setText(discordAuthStateEl, 'Standalone browser preview, Discord SDK not required.');
     setText(activityInstanceIdEl, 'Standalone preview, no Discord instance id.');
     setText(activityParticipantCountEl, 'Standalone preview.');
+    syncHeroActionLinks();
     return;
   }
 
@@ -301,12 +318,16 @@ async function connectDiscord(clientId, insideDiscord) {
     activityState.instanceId = String(discordSdk.instanceId || '').trim();
     setText(activityInstanceIdEl, activityState.instanceId || 'Discord SDK connected, but instance id was blank.');
     await discordSdk.ready();
+    activityState.instanceId = String(discordSdk.instanceId || activityState.instanceId || '').trim();
+    setText(activityInstanceIdEl, activityState.instanceId || 'Discord SDK connected, but instance id was blank.');
     setText(discordAuthStateEl, 'Discord SDK connected.');
+    syncHeroActionLinks();
     await refreshDiscordParticipants();
     if (latestLibrary) renderMultiplayerLab(latestLibrary);
   } catch (error) {
     console.error('Discord Activity SDK init failed', error);
     setText(discordAuthStateEl, 'SDK init failed. Check the Activity portal mappings and client ID.');
+    syncHeroActionLinks();
     if (!statusEl.textContent || statusEl.textContent.includes('loaded')) {
       setText(statusEl, 'The in-Discord game hub loaded, but the Discord SDK handshake did not complete yet.');
     }
