@@ -864,7 +864,8 @@ async function refreshDiscordRoomParticipants() {
 }
 
 function buildRoomActionUrl(roomId, action, payload = {}) {
-  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, window.location.origin);
+  const baseOrigin = embeddedMode ? CANONICAL_ARCADE_ORIGIN : window.location.origin;
+  const url = new URL(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, baseOrigin);
   Object.entries(payload || {}).forEach(([key, value]) => {
     if (value == null || value === '') return;
     if (typeof value === 'boolean') {
@@ -888,7 +889,13 @@ async function roomActionFetch(roomId, action, payload = {}) {
     const compactPayload = { ...payload };
     if (action === 'sync') delete compactPayload.participants;
     const queryUrl = buildRoomActionUrl(roomId, action, compactPayload);
-    return fetch(queryUrl, { method: 'GET' });
+    return fetch(queryUrl, {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'omit',
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    });
   }
 
   const queryUrl = buildRoomActionUrl(roomId, action, payload);
@@ -898,7 +905,7 @@ async function roomActionFetch(roomId, action, payload = {}) {
     body: JSON.stringify(payload),
   });
   if (response.ok) return response;
-  response = await fetch(queryUrl, { method: 'GET' });
+  response = await fetch(queryUrl, { method: 'GET', cache: 'no-store' });
   return response;
 }
 
