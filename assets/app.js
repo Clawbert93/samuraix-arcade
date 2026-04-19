@@ -178,6 +178,15 @@ const roomViewerId = (() => {
   }
 })();
 const roomViewerName = `Player ${roomViewerId.slice(-4)}`;
+const PHASE0_MULTIPLAYER_CORE = 'n64';
+const PHASE0_MULTIPLAYER_GAME = 'super-smash-bros';
+const runtimeConfig = {
+  netplay: {
+    server: '',
+    iceServers: [],
+  },
+};
+let roomSyncedSelectionKey = '';
 
 const CLOUD_PROXY_HOSTS = new Set([
   'pub-2c5587529e4249efbcf882d5d3697d95.r2.dev',
@@ -595,6 +604,70 @@ function currentRequestedGameTitle() {
   return selectedGame?.title || '';
 }
 
+function hashStringToPositiveInt(value) {
+  let hash = 0;
+  const input = String(value || '');
+  for (let index = 0; index < input.length; index += 1) {
+    hash = ((hash << 5) - hash) + input.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash || 1);
+}
+
+function isPhase0MultiplayerTarget() {
+  return multiplayerRequested && core === PHASE0_MULTIPLAYER_CORE;
+}
+
+function getPhase0MultiplayerGameKey() {
+  return currentRequestedGameId() || requestedGameKey || '';
+}
+
+function shouldEnableNetplayForCurrentSelection() {
+  return isPhase0MultiplayerTarget() && getPhase0MultiplayerGameKey() === PHASE0_MULTIPLAYER_GAME;
+}
+
+function getRoomNetplayConfig() {
+  const roomId = getEffectiveRoomId();
+  if (!roomId || !shouldEnableNetplayForCurrentSelection()) return null;
+  const server = String(runtimeConfig.netplay?.server || '').trim();
+  if (!server) return null;
+  return {
+    roomId,
+    server,
+    iceServers: Array.isArray(runtimeConfig.netplay?.iceServers) ? runtimeConfig.netplay.iceServers : [],
+    gameId: hashStringToPositiveInt(`${core}:${PHASE0_MULTIPLAYER_GAME}:${roomId}`),
+  };
+}
+
+function maybeApplyRoomSelectedGame(state = multiplayerRoomState) {
+  if (!state || launched || selectedFile || !state.gameId || core !== state.core) return;
+  if (!Array.isArray(library[core]) || !library[core].length) return;
+
+  const viewer = getViewerMember(state);
+  if (viewer?.isHost) return;
+
+  const targetKey = String(state.gameId || '').trim().toLowerCase();
+  if (!targetKey || roomSyncedSelectionKey === targetKey) return;
+
+  const chosen = library[core].find((entry) => slugifyTitle(entry.title) === targetKey || String(entry.title || '').trim().toLowerCase() === targetKey);
+  if (!chosen) return;
+
+  roomSyncedSelectionKey = targetKey;
+  setSelectedGame(chosen);
+}
+
+async function loadRuntimeConfig() {
+  try {
+    const response = await fetch('/api/runtime-config', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const loaded = await response.json();
+    runtimeConfig.netplay.server = String(loaded?.netplay?.server || '').trim();
+    runtimeConfig.netplay.iceServers = Array.isArray(loaded?.netplay?.iceServers) ? loaded.netplay.iceServers : [];
+  } catch (error) {
+    console.error('Runtime config load failed', error);
+  }
+}
+
 function sanitizeRoomParticipantList(rawParticipants) {
   return Array.isArray(rawParticipants)
     ? rawParticipants.map((entry) => ({
@@ -711,9 +784,15 @@ function renderRoomState(state = multiplayerRoomState) {
   if (roomHostStateEl) roomHostStateEl.textContent = host ? host.displayName : 'No host yet';
   if (roomGameStateEl) roomGameStateEl.textContent = state?.gameTitle ? `${state.gameTitle}${state?.core ? ` (${String(state.core).toUpperCase()})` : ''}` : 'No active shared game yet.';
   if (roomDebugNoteEl) {
-    roomDebugNoteEl.textContent = Array.isArray(state?.participantSnapshot) && state.participantSnapshot.length
+    const participantNote = Array.isArray(state?.participantSnapshot) && state.participantSnapshot.length
       ? `Discord currently reports ${state.participantSnapshot.length} connected participant(s) in this Activity instance.`
       : 'Discord participant snapshots will show up here once the SDK reports them.';
+    const netplayNote = getRoomNetplayConfig()
+      ? ` Netplay is wired for the hardcoded Smash test and will target ${runtimeConfig.netplay.server}.`
+      : (shouldEnableNetplayForCurrentSelection()
+        ? ' Netplay launch is selected, but no netplay server is configured yet.'
+        : ' Netplay only auto-wires for the Phase 0 Smash test right now.');
+    roomDebugNoteEl.textContent = `${participantNote}${netplayNote}`;
   }
 
   if (roomSlotSummaryEl) {
@@ -770,6 +849,7 @@ async function syncRoomState(reason = 'poll') {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     multiplayerRoomState = await response.json();
+    maybeApplyRoomSelectedGame(multiplayerRoomState);
     renderRoomState(multiplayerRoomState);
     return multiplayerRoomState;
   } catch (error) {
@@ -1027,12 +1107,16 @@ buttonEl?.addEventListener('click', () => {
     ...(pspPreset?.options || {}),
     ...(ndsTouchOptions || {}),
   };
+  const roomNetplay = getRoomNetplayConfig();
 
   window.EJS_player = '#game';
   window.EJS_core = runtimeCore;
   window.EJS_gameUrl = gameUrl;
   window.EJS_gameName = gameName;
   window.EJS_pathtodata = runtimeDataBase;
+  window.EJS_gameID = roomNetplay?.gameId;
+  window.EJS_netplayServer = roomNetplay?.server || '';
+  window.EJS_netplayICEServers = roomNetplay?.iceServers || [];
   if (pspPreset) applyPspPresetToStorage(gameUrl, gameName, pspPreset);
   if (ndsTouchOptions) applyCoreOptionsToStorage(runtimeCore, gameUrl, gameName, ndsTouchOptions);
 
@@ -1080,7 +1164,12 @@ buttonEl?.addEventListener('click', () => {
   const embeddedFeatureNote = embeddedMode && core !== 'psp'
     ? ' Fullscreen and save-state tools are browser-mode features for now.'
     : '';
-  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}${embeddedFeatureNote}`);
+  const netplayNote = shouldEnableNetplayForCurrentSelection()
+    ? (roomNetplay
+      ? ` Netplay is armed for room ${roomNetplay.roomId}, using shared game id ${roomNetplay.gameId}.`
+      : ' This is the multiplayer test path, but no netplay server is configured yet, so the room panel will work without real synced gameplay.')
+    : '';
+  setStatus(`Loading ${gameName}${sourceLabel}… first launch can take a little longer while the browser caches core files.${embeddedPspNote}${pspPresetNote}${ndsTouchFallbackNote}${embeddedFeatureNote}${netplayNote}`);
   syncLaunchState();
   if (shouldShowRoomPanel()) syncRoomState('launch');
 });
@@ -1144,7 +1233,12 @@ installKeyboardFocusBridge();
 syncPspPresetUi();
 syncEmbeddedWarnings();
 
-connectDiscordSdkIfEmbedded();
+Promise.allSettled([
+  loadRuntimeConfig(),
+  connectDiscordSdkIfEmbedded(),
+]).then(() => {
+  renderRoomState();
+});
 
 loadLibrary().then(() => {
   setStatus(core === 'psp'

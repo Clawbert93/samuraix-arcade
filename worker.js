@@ -1,5 +1,10 @@
 const R2_PUBLIC_BASE_URL = 'https://pub-2c5587529e4249efbcf882d5d3697d95.r2.dev';
 const ROOM_STALE_MS = 1000 * 60 * 15;
+const DEFAULT_NETPLAY_ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+];
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data, null, 2), {
@@ -66,6 +71,26 @@ async function proxyCloudAsset(request, env) {
     statusText: upstream.statusText,
     headers,
   });
+}
+
+function readNetplayIceServers(env) {
+  const raw = String(env.NETPLAY_ICE_SERVERS_JSON || '').trim();
+  if (!raw) return DEFAULT_NETPLAY_ICE_SERVERS;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : DEFAULT_NETPLAY_ICE_SERVERS;
+  } catch (error) {
+    return DEFAULT_NETPLAY_ICE_SERVERS;
+  }
+}
+
+function runtimeConfig(env) {
+  return {
+    netplay: {
+      server: String(env.NETPLAY_SERVER_URL || '').trim(),
+      iceServers: readNetplayIceServers(env),
+    },
+  };
 }
 
 function defaultRoomState(roomId) {
@@ -383,6 +408,10 @@ function routeRoomRequest(request, env, roomId) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (url.pathname === '/api/runtime-config') {
+      return json(runtimeConfig(env));
+    }
 
     if (/^\/api\/rooms\//.test(url.pathname)) {
       const [, , , roomId] = url.pathname.split('/');
