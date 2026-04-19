@@ -109,6 +109,9 @@ const dropdownNotesEl = document.getElementById('gameNotes');
 const pspPresetWrapEl = document.getElementById('pspPresetWrap');
 const pspPresetEl = document.getElementById('pspPreset');
 const pspPresetNotesEl = document.getElementById('pspPresetNotes');
+const embeddedFocusWrapEl = document.getElementById('embeddedFocusWrap');
+const embeddedFocusButtonEl = document.getElementById('embeddedFocusButton');
+const embeddedFocusNotesEl = document.getElementById('embeddedFocusNotes');
 const buttonEl = document.getElementById('launchButton');
 const fullscreenButtonEl = document.getElementById('fullscreenButton');
 const popoutButtonEl = document.getElementById('popoutButton');
@@ -441,12 +444,17 @@ function applyPspPresetToStorage(gameUrl, gameName, preset) {
 }
 
 function syncPspPresetUi() {
-  const show = core === 'psp';
-  if (pspPresetWrapEl) pspPresetWrapEl.hidden = !show;
+  const showPspPreset = core === 'psp';
+  const showEmbeddedFocus = embeddedMode && core !== 'psp';
+
+  if (pspPresetWrapEl) pspPresetWrapEl.hidden = !showPspPreset;
   if (pspPresetNotesEl) {
-    pspPresetNotesEl.hidden = !show;
-    if (show) pspPresetNotesEl.textContent = getPspPreset().note;
+    pspPresetNotesEl.hidden = !showPspPreset;
+    if (showPspPreset) pspPresetNotesEl.textContent = getPspPreset().note;
   }
+
+  if (embeddedFocusWrapEl) embeddedFocusWrapEl.hidden = !showEmbeddedFocus;
+  if (embeddedFocusNotesEl) embeddedFocusNotesEl.hidden = !showEmbeddedFocus;
 }
 
 function syncEmbeddedWarnings() {
@@ -483,15 +491,17 @@ function syncEmbeddedWarnings() {
     pspRuntimeInfoEl.hidden = true;
   }
 
+  if (fullscreenButtonEl) fullscreenButtonEl.hidden = embeddedMode;
+
   if (embeddedMode && core === 'psp') {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (recommended)';
-    if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fill window';
+    if (embeddedFocusButtonEl) embeddedFocusButtonEl.textContent = 'Fill window';
     if (buttonEl) buttonEl.textContent = 'Open PSP in browser';
     return;
   }
   if (embeddedMode) {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (fullscreen + save states)';
-    if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fill window';
+    if (embeddedFocusButtonEl) embeddedFocusButtonEl.textContent = document.body.classList.contains('embedded-focus-mode') ? 'Exit focus mode' : 'Fill window';
   } else {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
     if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fullscreen';
@@ -503,13 +513,14 @@ function syncLaunchState() {
   if (!buttonEl) return;
   buttonEl.disabled = !(selectedFile || selectedGame) || launched;
   if (fullscreenButtonEl) fullscreenButtonEl.disabled = !launched;
+  if (embeddedFocusButtonEl) embeddedFocusButtonEl.disabled = !launched;
 }
 
 function setEmbeddedFocusMode(enabled) {
   document.documentElement.classList.toggle('embedded-focus-mode', enabled);
   document.body.classList.toggle('embedded-focus-mode', enabled);
-  if (fullscreenButtonEl) {
-    fullscreenButtonEl.textContent = enabled ? 'Exit focus mode' : 'Fill window';
+  if (embeddedFocusButtonEl) {
+    embeddedFocusButtonEl.textContent = enabled ? 'Exit focus mode' : 'Fill window';
   }
 }
 
@@ -767,17 +778,16 @@ buttonEl?.addEventListener('click', () => {
   syncLaunchState();
 });
 
+function toggleEmbeddedFocusMode() {
+  const enabled = !document.body.classList.contains('embedded-focus-mode');
+  setEmbeddedFocusMode(enabled);
+  setStatus(enabled
+    ? 'Focus mode enabled. The Discord player is now filling the Activity window more aggressively.'
+    : 'Focus mode off. Restored the normal split layout.');
+}
+
 fullscreenButtonEl?.addEventListener('click', async () => {
   if (!frameEl || !launched) return;
-
-  if (embeddedMode) {
-    const enabled = !document.body.classList.contains('embedded-focus-mode');
-    setEmbeddedFocusMode(enabled);
-    setStatus(enabled
-      ? 'Focus mode enabled. The Discord player is now filling the Activity window more aggressively.'
-      : 'Focus mode off. Restored the normal split layout.');
-    return;
-  }
 
   try {
     if (document.fullscreenElement === frameEl) {
@@ -789,6 +799,11 @@ fullscreenButtonEl?.addEventListener('click', async () => {
   } catch (error) {
     setStatus('Fullscreen was blocked here. Use Open in browser for the cleanest full-window mode.');
   }
+});
+
+embeddedFocusButtonEl?.addEventListener('click', () => {
+  if (!frameEl || !launched) return;
+  toggleEmbeddedFocusMode();
 });
 
 popoutButtonEl?.addEventListener('click', () => {
