@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'dist'
 MAX_ASSET_BYTES = 25 * 1024 * 1024
-COPY_ROOT_FILES = ['index.html', 'play.html', 'activity.html', 'psp-debug.html', '.nojekyll', '_headers']
+COPY_ROOT_FILES = ['index.html', 'play.html', 'activity.html', 'room-bridge.html', 'psp-debug.html', '.nojekyll', '_headers']
 COPY_DATA_FILES = ['pending-large-assets.json', 'r2-cors.arcade-example.json', 'vee-arcade-meta.json']
 
 
