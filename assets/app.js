@@ -961,22 +961,15 @@ async function roomActionFetchViaBridge(roomId, action, payload = {}) {
 }
 
 async function roomActionFetch(roomId, action, payload = {}) {
-  const preferQueryTransport = embeddedMode;
+  const queryUrl = buildRoomActionUrl(roomId, action, normalizeBridgePayload(action, payload));
 
-  if (preferQueryTransport) {
-    try {
-      return await roomActionFetchViaBridge(roomId, action, payload);
-    } catch (error) {
-      console.warn('Room bridge failed, falling back to in-page fetch', error);
-      const queryUrl = buildRoomActionUrl(roomId, action, normalizeBridgePayload(action, payload));
-      return fetch(queryUrl, {
-        method: 'GET',
-        cache: 'no-store',
-      });
-    }
+  if (embeddedMode) {
+    return fetch(queryUrl, {
+      method: 'GET',
+      cache: 'no-store',
+    });
   }
 
-  const queryUrl = buildRoomActionUrl(roomId, action, payload);
   let response = await fetch(`/api/rooms/${encodeURIComponent(roomId)}/${action}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -1184,7 +1177,7 @@ function populateDropdown() {
 
 async function loadLibrary() {
   try {
-    const response = await fetch('data/game-library.json?v=1', { cache: 'no-store' });
+    const response = await fetch('/data/game-library.json?v=1', { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     library = await response.json();
   } catch (error) {

@@ -426,24 +426,43 @@ select option {
 }
 body.embedded-focus-mode,
 html.embedded-focus-mode {
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100dvh;
+}
+.embedded-mode.embedded-focus-mode .shell.player-shell {
+  width: 100vw;
+  max-width: none;
+  min-height: 100dvh;
+  height: 100dvh;
+  padding: 4px 0;
+  overflow: hidden;
 }
 .embedded-mode.embedded-focus-mode .embedded-hubbar {
-  margin-bottom: 6px;
+  margin: 0 4px 4px;
+  padding: 8px;
+  position: static;
 }
 .embedded-mode.embedded-focus-mode .player-grid {
   grid-template-columns: 1fr;
-  margin-top: 6px;
+  margin: 0;
+  height: calc(100dvh - 58px);
 }
 .embedded-mode.embedded-focus-mode .controls-card {
   display: none;
 }
+.embedded-mode.embedded-focus-mode .player-grid > .card:last-child {
+  margin: 0 4px;
+  padding: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
 .embedded-mode.embedded-focus-mode .game-frame,
 .embedded-mode.embedded-focus-mode #game {
-  min-height: calc(100vh - 82px);
+  min-height: 0;
+  height: 100%;
 }
 .embedded-mode.embedded-focus-mode .game-frame {
-  height: calc(100vh - 82px);
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   display: flex;

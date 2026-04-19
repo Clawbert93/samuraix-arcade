@@ -458,6 +458,18 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === '/favicon.ico' || url.pathname === '/activity/favicon.ico') {
+      return new Response(null, { status: 204 });
+    }
+
+    if (url.pathname.startsWith('/activity/')) {
+      const nestedPath = url.pathname.slice('/activity'.length) || '/';
+      if (/^\/api\//.test(nestedPath) || /^\/cloud-assets(?:-v\d+)?\//.test(nestedPath) || nestedPath === '/room-bridge.html') {
+        url.pathname = nestedPath;
+        request = new Request(url.toString(), request);
+      }
+    }
+
     if (url.pathname === '/api/runtime-config') {
       return json(runtimeConfig(env));
     }
