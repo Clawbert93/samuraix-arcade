@@ -578,16 +578,22 @@ html.embedded-focus-mode {
   justify-content: center;
   overflow: hidden;
 }
-.embedded-mode.embedded-focus-mode #game canvas,
 .embedded-mode.embedded-focus-mode #game iframe,
-.activity-iframe-mode #game canvas,
 .activity-iframe-mode #game iframe,
-.game-frame.is-fullscreen #game canvas,
 .game-frame.is-fullscreen #game iframe {
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
   max-height: none !important;
+  object-fit: contain;
+}
+.embedded-mode.embedded-focus-mode #game canvas,
+.activity-iframe-mode #game canvas,
+.game-frame.is-fullscreen #game canvas {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain;
 }
 

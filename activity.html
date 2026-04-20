@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SamuraiX Arcade Activity</title>
   <meta name="description" content="Discord Activity shell for the SamuraiX Arcade.">
-  <link rel="stylesheet" href="assets/styles.css?v=restore5am15">
+  <link rel="stylesheet" href="assets/styles.css?v=mobilelane20apr2">
 </head>
 <body class="activity-body">
   <main class="shell activity-shell">
@@ -20,7 +20,7 @@
         <a class="button" href="?core=gb&discord=1">GB/GBC</a>
         <a class="button" href="?core=snes&discord=1">SNES</a>
         <a class="button" href="?core=n64&discord=1">N64</a>
-        <a class="button" href="play.html?core=psp" target="_blank" rel="noreferrer">PSP browser</a>
+        <a class="button" href="?core=psp&discord=1">PSP browser</a>
         <a class="button" href="https://samuraix-arcade.roberteverland22.workers.dev/index.html" target="_blank" rel="noreferrer">Open full arcade</a>
       </div>
     </section>
@@ -44,10 +44,10 @@
           <strong>Live shelf count:</strong> <span id="libraryStats">Loading curated systems and games…</span>
         </div>
         <div class="note-box">
-          <strong>In-Discord lane:</strong> Desktop keeps the full embedded shelf flow. On Discord mobile, GB/GBC, SNES, and GBA stay in the Activity lane, while DS is routed out to the standalone player on purpose.
+          <strong>In-Discord lane:</strong> Desktop keeps the full embedded shelf flow. On Discord mobile, GB/GBC, SNES, and GBA stay in the easy lane, DS now stays in the Activity lane again with safer touch handling, and N64 plus PS1 remain cautious test lanes.
         </div>
         <div class="note-box warning-box">
-          <strong>PSP policy:</strong> PSP stays browser-first. It is still janky enough that the Activity hub should steer people to the browser instead of pretending Discord is the best place to run it.
+          <strong>PSP policy:</strong> PSP still stays browser-first, but the Discord button now opens a real PSP shelf first so people can choose a game before the browser handoff.
         </div>
       </article>
 
@@ -78,7 +78,7 @@
           <p class="eyebrow">🕹️ Shelves</p>
           <h2>Pick a system inside Discord</h2>
         </div>
-        <p class="subtle">Each shelf opens the embedded player with the curated dropdown ready. PSP is split out below as browser-first.</p>
+        <p class="subtle">Each shelf opens the embedded player with the curated dropdown ready. PSP is still browser-first, but now gets its own in-Activity shelf before the browser handoff.</p>
       </div>
       <div class="activity-system-grid" id="systemShelfGrid">
         <p class="subtle">Loading system shelves…</p>
@@ -113,6 +113,6 @@
       </article>
     </section>
   </main>
-  <script type="module" src="assets/activity.js?v=mobilelane20apr1"></script>
+  <script type="module" src="assets/activity.js?v=mobilelane20apr2"></script>
 </body>
 </html>

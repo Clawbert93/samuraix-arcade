@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const PLAYER_REV = 'restore5am15';
+const PLAYER_REV = 'mobilelane20apr2';
 
 const SYSTEMS = {
   gb: {
@@ -110,6 +110,10 @@ function isActivityIframeHost() {
 function setActivityIframeGameplayMode(enabled) {
   document.documentElement.classList.toggle('activity-iframe-mode', enabled);
   document.body.classList.toggle('activity-iframe-mode', enabled);
+}
+
+function isEmbeddedFocusModeActive() {
+  return document.body.classList.contains('embedded-focus-mode') || document.body.classList.contains('activity-iframe-mode');
 }
 
 const titleEl = document.getElementById('systemTitle');
@@ -565,7 +569,7 @@ function syncEmbeddedWarnings() {
   }
   if (embeddedMode) {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Browser mode (fullscreen + save states)';
-    if (embeddedFocusButtonEl) embeddedFocusButtonEl.textContent = document.body.classList.contains('embedded-focus-mode') ? 'Exit focus mode' : 'Fill window';
+    if (embeddedFocusButtonEl) embeddedFocusButtonEl.textContent = isEmbeddedFocusModeActive() ? 'Exit focus mode' : 'Fill window';
   } else {
     if (popoutButtonEl) popoutButtonEl.textContent = 'Open in browser';
     if (fullscreenButtonEl) fullscreenButtonEl.textContent = 'Fullscreen';
@@ -581,8 +585,12 @@ function syncLaunchState() {
 }
 
 function setEmbeddedFocusMode(enabled) {
-  document.documentElement.classList.toggle('embedded-focus-mode', enabled);
-  document.body.classList.toggle('embedded-focus-mode', enabled);
+  if (isActivityIframeHost()) {
+    setActivityIframeGameplayMode(enabled);
+  } else {
+    document.documentElement.classList.toggle('embedded-focus-mode', enabled);
+    document.body.classList.toggle('embedded-focus-mode', enabled);
+  }
   if (embeddedFocusButtonEl) {
     embeddedFocusButtonEl.textContent = enabled ? 'Exit focus mode' : 'Fill window';
   }
@@ -602,7 +610,7 @@ function syncFullscreenState() {
 
 function forceResponsiveGameLayout() {
   if (!frameEl) return;
-  const expanded = document.fullscreenElement === frameEl || document.body.classList.contains('embedded-focus-mode');
+  const expanded = document.fullscreenElement === frameEl || isEmbeddedFocusModeActive();
   const nodes = frameEl.querySelectorAll('#game, #game > div, #game canvas, #game iframe');
   nodes.forEach((node) => {
     if (!(node instanceof HTMLElement)) return;
@@ -613,10 +621,15 @@ function forceResponsiveGameLayout() {
         node.style.width = '100%';
         node.style.height = '100%';
       }
-      if (node.tagName === 'CANVAS' || node.tagName === 'IFRAME') {
+      if (node.tagName === 'IFRAME') {
         node.style.width = '100%';
         node.style.height = '100%';
         node.style.objectFit = 'contain';
+        node.style.margin = '0 auto';
+      } else if (node.tagName === 'CANVAS') {
+        node.style.width = '';
+        node.style.height = '';
+        node.style.objectFit = '';
         node.style.margin = '0 auto';
       }
     } else {
@@ -1270,14 +1283,17 @@ dropdownEl?.addEventListener('change', () => {
   setSelectedGame(chosen);
 });
 
-buttonEl?.addEventListener('click', () => {
+buttonEl?.addEventListener('click', async () => {
   if ((!selectedFile && !selectedGame) || launched) return;
 
   if (embeddedMode && core === 'psp') {
     const standaloneUrl = new URL(window.location.href);
     standaloneUrl.searchParams.delete('embedded');
     setStatus('PSP is browser-first here. Opening the standalone browser version for a better shot at performance.');
-    window.open(standaloneUrl.toString(), '_blank', 'noopener,noreferrer');
+    const opened = await openUrlOutsideDiscord(standaloneUrl.toString());
+    if (!opened) {
+      setStatus('PSP is browser-first here, but the browser handoff was blocked. Use the PSP shelf from the Activity hub and try again.');
+    }
     return;
   }
 
@@ -1397,11 +1413,38 @@ buttonEl?.addEventListener('click', () => {
 });
 
 function toggleEmbeddedFocusMode() {
-  const enabled = !document.body.classList.contains('embedded-focus-mode');
+  const enabled = !isEmbeddedFocusModeActive();
   setEmbeddedFocusMode(enabled);
   setStatus(enabled
     ? 'Focus mode enabled. The Discord player is now filling the Activity window more aggressively.'
     : 'Focus mode off. Restored the normal split layout.');
+}
+
+async function openUrlOutsideDiscord(url) {
+  const target = String(url || '').trim();
+  if (!target) return false;
+
+  try {
+    const sdk = discordSdkInstance || window.__samuraixDiscordSdk;
+    if (embeddedMode && sdk?.commands?.openExternalLink) {
+      await sdk.commands.openExternalLink({ url: target });
+      return true;
+    }
+  } catch (error) {
+    console.error('Discord external browser open failed', error);
+  }
+
+  try {
+    const opened = window.open(target, '_blank', 'noopener,noreferrer');
+    if (opened) return true;
+  } catch (error) {}
+
+  try {
+    window.location.assign(target);
+    return true;
+  } catch (error) {}
+
+  return false;
 }
 
 fullscreenButtonEl?.addEventListener('click', async () => {
@@ -1432,14 +1475,17 @@ refreshRoomButtonEl?.addEventListener('click', () => {
   syncRoomState('manual-refresh');
 });
 
-popoutButtonEl?.addEventListener('click', () => {
+popoutButtonEl?.addEventListener('click', async () => {
   const target = new URL(window.location.href);
   target.searchParams.delete('embedded');
   target.searchParams.delete('activity');
   target.searchParams.delete('discord');
   target.searchParams.delete('client_id');
   target.searchParams.set('rev', PLAYER_REV);
-  window.open(target.toString(), '_blank', 'noopener,noreferrer');
+  const opened = await openUrlOutsideDiscord(target.toString());
+  if (!opened) {
+    setStatus('Browser popout was blocked here. Back out to the Activity hub and relaunch from there.');
+  }
 });
 
 document.addEventListener('fullscreenchange', syncFullscreenState);
