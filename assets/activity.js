@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am15';
+const ACTIVITY_REV = 'mobilelane20apr1';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -32,6 +32,10 @@ const SYSTEM_META = {
   psx: { label: 'PS1', tone: 'Strong embedded pick', browserFirst: false },
   psp: { label: 'PSP', tone: 'Browser-first, still janky in Discord', browserFirst: true, warning: 'Open PSP in the browser for the best shot at a decent session.' },
 };
+
+const MOBILE_ACTIVITY_SAFE_CORES = new Set(['gb', 'snes', 'gba']);
+const MOBILE_STANDALONE_PLAYER_CORES = new Set(['nds']);
+const MOBILE_ACTIVITY_CAUTION_CORES = new Set(['n64', 'psx']);
 
 const FEATURED_TITLES = [
   ['psx', 'Crash Bandicoot'],
@@ -75,6 +79,64 @@ function isDiscordActivityHost() {
 
 function isGitHubPagesHost() {
   return window.location.hostname === 'clawbert93.github.io';
+}
+
+function isLikelyTouchDevice() {
+  try {
+    if (window.matchMedia?.('(pointer: coarse)').matches) return true;
+  } catch (error) {}
+  return Number(navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window;
+}
+
+function isDiscordMobileLike() {
+  return activityState.insideDiscord && isLikelyTouchDevice();
+}
+
+function getLaunchPolicy(core) {
+  if (core === 'psp') {
+    return {
+      mode: 'external-browser',
+      badge: 'Browser-first',
+      badgeWarning: true,
+      copy: 'PSP stays browser-only. Discord mobile should not pretend this is a dependable embedded lane.',
+    };
+  }
+
+  if (isDiscordMobileLike()) {
+    if (MOBILE_ACTIVITY_SAFE_CORES.has(core)) {
+      return {
+        mode: 'activity',
+        badge: 'Mobile Activity-ready',
+        badgeWarning: false,
+        copy: `${SYSTEM_META[core]?.label || core.toUpperCase()} is one of the safer Discord mobile lanes right now.`,
+      };
+    }
+
+    if (MOBILE_STANDALONE_PLAYER_CORES.has(core)) {
+      return {
+        mode: 'standalone-player',
+        badge: 'Mobile player lane',
+        badgeWarning: true,
+        copy: 'DS stays visible on mobile, but it now exits the embedded Activity lane and opens the standalone player on purpose.',
+      };
+    }
+
+    if (MOBILE_ACTIVITY_CAUTION_CORES.has(core)) {
+      return {
+        mode: 'activity',
+        badge: 'Mobile test lane',
+        badgeWarning: true,
+        copy: `${SYSTEM_META[core]?.label || core.toUpperCase()} can still launch in Discord on mobile, but it should be treated as a cautious test lane, not a guaranteed clean fit.`,
+      };
+    }
+  }
+
+  return {
+    mode: activityState.insideDiscord && core !== 'psp' ? 'activity' : 'player',
+    badge: activityState.insideDiscord && core !== 'psp' ? 'In Discord' : 'Browser player',
+    badgeWarning: false,
+    copy: '',
+  };
 }
 
 function getCurrentActivityRoutePath() {
@@ -123,11 +185,42 @@ function buildActivityRouteHref(core, options = {}) {
   return `${getCurrentActivityRoutePath()}?${params.toString()}`;
 }
 
-function buildLaunchHref(core, options = {}) {
-  if (activityState.insideDiscord && core !== 'psp') {
-    return buildActivityRouteHref(core, options);
+function buildLaunchSpec(core, options = {}) {
+  const policy = getLaunchPolicy(core);
+
+  if (policy.mode === 'external-browser') {
+    return {
+      href: buildPlayerHref(core, { ...options, embedded: false, activity: false, activityIframe: false }),
+      external: true,
+      mode: policy.mode,
+    };
   }
-  return buildPlayerHref(core, options);
+
+  if (policy.mode === 'standalone-player') {
+    return {
+      href: buildPlayerHref(core, { ...options, embedded: false, activity: false, activityIframe: false }),
+      external: false,
+      mode: policy.mode,
+    };
+  }
+
+  if (activityState.insideDiscord && core !== 'psp') {
+    return {
+      href: buildActivityRouteHref(core, options),
+      external: false,
+      mode: 'activity',
+    };
+  }
+
+  return {
+    href: buildPlayerHref(core, options),
+    external: false,
+    mode: 'player',
+  };
+}
+
+function buildLaunchHref(core, options = {}) {
+  return buildLaunchSpec(core, options).href;
 }
 
 function updateActivityUrl(params) {
@@ -174,19 +267,43 @@ function syncHeroActionLinks() {
     const parsed = new URL(link.getAttribute('href') || '', window.location.href);
     const core = parsed.searchParams.get('core');
     if (!core) return;
-    link.href = buildLaunchHref(core, {
+    const launch = buildLaunchSpec(core, {
       game: parsed.searchParams.get('game') || '',
       launch: parsed.searchParams.get('launch') === '1',
       multiplayer: parsed.searchParams.get('multiplayer') === '1',
       embedded: true,
       activity: true,
     });
+    link.href = launch.href;
+    if (launch.external) {
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+    } else {
+      link.removeAttribute('target');
+      link.removeAttribute('rel');
+    }
   });
 }
 
 function renderEmbeddedPlayerMode(params) {
   const core = String(params.get('core') || '').trim();
   if (!core) return false;
+
+  const launch = buildLaunchSpec(core, {
+    game: params.get('game') || '',
+    launch: params.get('launch') === '1',
+    multiplayer: params.get('multiplayer') === '1',
+    room: params.get('room') || activityState.instanceId || '',
+    clientId: params.get('client_id') || activityState.clientId || '',
+    embedded: true,
+    activity: true,
+    activityIframe: true,
+  });
+
+  if (launch.mode !== 'activity') {
+    window.location.assign(launch.href);
+    return false;
+  }
 
   if (!activityShellEl) return false;
   closeEmbeddedPlayerMode({ updateHistory: false });
@@ -288,7 +405,7 @@ function handleInPlaceActivityLaunch(event) {
   if (!/\/activity(?:\.html)?$/i.test(target.pathname) && target.pathname !== window.location.pathname) return;
 
   const core = String(target.searchParams.get('core') || '').trim().toLowerCase();
-  if (!core || core === 'psp') return;
+  if (!core || getLaunchPolicy(core).mode !== 'activity') return;
 
   event.preventDefault();
 
@@ -356,6 +473,9 @@ function renderMultiplayerLab(library) {
     ? `This Activity instance is ${activityState.instanceId}. Anyone who joins this instance should land in the same shared room context.`
     : 'Discord has not handed us the instance id yet, but the shared-room launch path is already wired for the same-instance test.';
 
+  const smashLaunch = buildLaunchSpec('n64', { game: smash?.title || 'Super Smash Bros.', launch: true, multiplayer: true, embedded: true, activity: true });
+  const n64ShelfLaunch = buildLaunchSpec('n64', { embedded: true, activity: true });
+
   multiplayerLabEl.appendChild(createTile({
     title: smash?.title || 'Phase 0 Smash test room',
     body: `${roomCopy} Joiners should begin as watch-only, and the host-side player page now has the first room panel and slot assignment groundwork.`,
@@ -365,8 +485,8 @@ function renderMultiplayerLab(library) {
       { label: 'Watch-only joins' },
     ],
     actions: [
-      { label: 'Launch shared Smash test', href: buildLaunchHref('n64', { game: smash?.title || 'Super Smash Bros.', launch: true, multiplayer: true, embedded: true, activity: true }), primary: true },
-      { label: 'Open N64 shelf', href: buildLaunchHref('n64', { embedded: true, activity: true }) },
+      { label: smashLaunch.mode === 'activity' ? 'Launch shared Smash test' : 'Open shared Smash test', href: smashLaunch.href, primary: true, external: smashLaunch.external },
+      { label: n64ShelfLaunch.mode === 'activity' ? 'Open N64 shelf' : 'Open N64 player', href: n64ShelfLaunch.href, external: n64ShelfLaunch.external },
     ],
   }));
 }
@@ -376,7 +496,9 @@ function renderLibrary(library) {
   const systemKeys = Object.keys(SYSTEM_META).filter((key) => Array.isArray(library[key]) && library[key].length > 0);
   const totalGames = systemKeys.reduce((sum, key) => sum + library[key].length, 0);
   setText(libraryStatsEl, `${systemKeys.length} systems, ${totalGames} curated games live.`);
-  setText(statusEl, `Discord game hub loaded. ${totalGames} curated games are live across ${systemKeys.length} systems, with lighter shelves kept in Discord and PSP split into browser-first mode.`);
+  setText(statusEl, isDiscordMobileLike()
+    ? `Discord mobile mode loaded. ${totalGames} curated games are live, GB/GBC plus GBA plus SNES stay in the Activity lane, DS now exits to the standalone player on purpose, and PSP stays browser-only.`
+    : `Discord game hub loaded. ${totalGames} curated games are live across ${systemKeys.length} systems, with lighter shelves kept in Discord and PSP split into browser-first mode.`);
 
   renderMultiplayerLab(library);
 
@@ -384,49 +506,60 @@ function renderLibrary(library) {
   systemKeys.forEach((core) => {
     const meta = SYSTEM_META[core];
     const list = library[core] || [];
+    const policy = getLaunchPolicy(core);
+    const shelfLaunch = buildLaunchSpec(core, { embedded: true, activity: true });
     const badges = [
       { label: `${list.length} games` },
-      meta.browserFirst ? { label: 'Browser-first', warning: true } : { label: 'In Discord' },
+      { label: policy.badge, warning: policy.badgeWarning },
     ];
     if (meta.warning) badges.push({ label: 'Heads up', warning: true });
-    const actions = meta.browserFirst
-      ? [
-          { label: `Open ${meta.label} in browser`, href: isGitHubPagesHost() ? `play.html?core=${core}` : `/play?core=${core}`, primary: true, external: true },
-        ]
-      : [
-          { label: `Open ${meta.label} shelf`, href: buildLaunchHref(core, { embedded: true, activity: true }), primary: true },
-        ];
+    const actions = [
+      {
+        label: policy.mode === 'activity'
+          ? `Open ${meta.label} shelf`
+          : (policy.mode === 'standalone-player' ? `Open ${meta.label} player` : `Open ${meta.label} in browser`),
+        href: shelfLaunch.href,
+        primary: true,
+        external: shelfLaunch.external,
+      },
+    ];
     systemShelfGridEl.appendChild(createTile({
       title: meta.label,
-      body: `${meta.tone}. ${meta.warning || 'Curated dropdown is ready the moment the shelf opens.'}`,
+      body: `${meta.tone}. ${policy.copy || meta.warning || 'Curated dropdown is ready the moment the shelf opens.'}`,
       badges,
       actions,
     }));
   });
 
   featuredLaunchesEl.innerHTML = '';
-  FEATURED_TITLES.map(([core, title]) => findGame(library, core, title)).filter(Boolean).forEach((entry) => {
-    const meta = SYSTEM_META[Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry))];
+  FEATURED_TITLES.map(([core, title]) => [core, findGame(library, core, title)]).filter(([, entry]) => Boolean(entry)).forEach(([core, entry]) => {
+    const meta = SYSTEM_META[core];
+    const policy = getLaunchPolicy(core);
+    const launch = buildLaunchSpec(core, { game: entry.title, launch: true, embedded: true, activity: true });
     featuredLaunchesEl.appendChild(createTile({
       title: entry.title,
-      body: meta.browserFirst
-        ? `${meta.label} pick. Best launched in the browser, not trapped inside Discord.`
-        : `${meta.label} pick. Good fast start for a room session without digging through the full shelf first.`,
+      body: policy.mode === 'activity'
+        ? `${meta.label} pick. Good fast start for a room session without digging through the full shelf first.`
+        : `${meta.label} pick. This one now avoids the embedded mobile Activity lane on purpose and opens the safer player path instead.`,
       badges: [
         { label: meta.label },
-        meta.browserFirst ? { label: 'Browser-first', warning: true } : { label: 'Launch inside Discord' },
+        { label: policy.mode === 'activity' ? 'Launch inside Discord' : policy.badge, warning: policy.mode !== 'activity' },
       ],
       actions: [
-        meta.browserFirst
-          ? { label: 'Open in browser', href: buildPlayerHref(Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry)), { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true }
-          : { label: 'Launch now', href: buildLaunchHref(Object.keys(SYSTEM_META).find((key) => (library[key] || []).includes(entry)), { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
+        { label: policy.mode === 'activity' ? 'Launch now' : (policy.mode === 'standalone-player' ? 'Open player' : 'Open in browser'), href: launch.href, primary: true, external: launch.external },
       ],
     }));
   });
 
   activityBestBetsEl.innerHTML = '';
-  BEST_BET_TITLES.map(([core, title]) => [core, findGame(library, core, title) || firstGame(library, core)]).filter(([, entry]) => !!entry).forEach(([core, entry]) => {
+  BEST_BET_TITLES
+    .filter(([core]) => !(isDiscordMobileLike() && getLaunchPolicy(core).mode !== 'activity'))
+    .map(([core, title]) => [core, findGame(library, core, title) || firstGame(library, core)])
+    .filter(([, entry]) => !!entry)
+    .forEach(([core, entry]) => {
     const meta = SYSTEM_META[core];
+    const launch = buildLaunchSpec(core, { game: entry.title, launch: true, embedded: true, activity: true });
+    const shelfLaunch = buildLaunchSpec(core, { embedded: true, activity: true });
     activityBestBetsEl.appendChild(createTile({
       title: entry.title,
       body: meta.warning || `${meta.label} is one of the smoother fits for Discord room play.`,
@@ -435,25 +568,31 @@ function renderLibrary(library) {
         { label: 'Activity-ready' },
       ],
       actions: [
-        { label: 'Launch in Discord', href: buildLaunchHref(core, { game: entry.title, launch: true, embedded: true, activity: true }), primary: true },
-        { label: `Open ${meta.label} shelf`, href: buildLaunchHref(core, { embedded: true, activity: true }) },
+        { label: 'Launch in Discord', href: launch.href, primary: true, external: launch.external },
+        { label: `Open ${meta.label} shelf`, href: shelfLaunch.href, external: shelfLaunch.external },
       ],
     }));
   });
 
   browserFirstLaneEl.innerHTML = '';
-  BROWSER_FIRST_TITLES.map(([core, title]) => [core, findGame(library, core, title) || firstGame(library, core)]).filter(([, entry]) => !!entry).forEach(([core, entry]) => {
+  const browserLaneTitles = isDiscordMobileLike()
+    ? [['nds', 'Pokemon HeartGold Version'], ...BROWSER_FIRST_TITLES]
+    : BROWSER_FIRST_TITLES;
+
+  browserLaneTitles.map(([core, title]) => [core, findGame(library, core, title) || firstGame(library, core)]).filter(([, entry]) => !!entry).forEach(([core, entry]) => {
     const meta = SYSTEM_META[core];
+    const launch = buildLaunchSpec(core, { game: entry.title, launch: true, embedded: false, activity: false });
+    const shelfLaunch = buildLaunchSpec(core, { embedded: false, activity: false });
     browserFirstLaneEl.appendChild(createTile({
       title: entry.title,
-      body: meta.warning || `${meta.label} is still better outside the embedded Activity view.`,
+      body: getLaunchPolicy(core).copy || meta.warning || `${meta.label} is still better outside the embedded Activity view.`,
       badges: [
         { label: meta.label },
-        { label: 'Browser-first', warning: true },
+        { label: getLaunchPolicy(core).badge, warning: true },
       ],
       actions: [
-        { label: 'Open in browser', href: buildPlayerHref(core, { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true },
-        { label: `Open ${meta.label} shelf`, href: isGitHubPagesHost() ? `play.html?core=${core}` : `/play?core=${core}`, external: true },
+        { label: getLaunchPolicy(core).mode === 'standalone-player' ? 'Open player' : 'Open in browser', href: launch.href, primary: true, external: launch.external },
+        { label: getLaunchPolicy(core).mode === 'standalone-player' ? `Open ${meta.label} player` : `Open ${meta.label} shelf`, href: shelfLaunch.href, external: shelfLaunch.external },
       ],
     }));
   });
