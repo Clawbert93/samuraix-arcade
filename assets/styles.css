@@ -472,6 +472,9 @@ html.embedded-focus-mode {
   width: 100%;
   height: 100%;
   min-height: 0;
+  max-width: none !important;
+  max-height: none !important;
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -481,8 +484,11 @@ html.embedded-focus-mode {
 .embedded-mode.embedded-focus-mode #game iframe,
 .game-frame.is-fullscreen #game canvas,
 .game-frame.is-fullscreen #game iframe {
-  max-width: 100% !important;
-  max-height: 100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
 }
 
 @media (max-width: 860px) {

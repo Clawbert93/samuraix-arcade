@@ -1,4 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
+const ACTIVITY_REV = 'restore5am4';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -70,6 +71,10 @@ function isDiscordActivityHost() {
   return /(?:^|\.)discordsays\.com$/i.test(window.location.hostname);
 }
 
+function isGitHubPagesHost() {
+  return window.location.hostname === 'clawbert93.github.io';
+}
+
 function slugifyTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -89,7 +94,8 @@ function buildPlayerHref(core, options = {}) {
   if (roomId) params.set('room', roomId);
   const clientId = String(options.clientId || activityState.clientId || '').trim();
   if (clientId && core !== 'psp') params.set('client_id', clientId);
-  return `/play?${params.toString()}`;
+  params.set('rev', ACTIVITY_REV);
+  return `${isGitHubPagesHost() ? 'play.html' : '/play'}?${params.toString()}`;
 }
 
 function buildActivityRouteHref(core, options = {}) {
@@ -104,7 +110,8 @@ function buildActivityRouteHref(core, options = {}) {
   if (roomId) params.set('room', roomId);
   const clientId = String(options.clientId || activityState.clientId || '').trim();
   if (clientId && core !== 'psp') params.set('client_id', clientId);
-  return `/activity?${params.toString()}`;
+  params.set('rev', ACTIVITY_REV);
+  return `${isGitHubPagesHost() ? 'activity.html' : '/activity'}?${params.toString()}`;
 }
 
 function buildLaunchHref(core, options = {}) {
@@ -118,8 +125,8 @@ function syncHeroActionLinks() {
   const heroActionsEl = document.getElementById('activityHeroActions');
   if (!heroActionsEl) return;
 
-  heroActionsEl.querySelectorAll('a[href*="/play"], a[href*="/activity?"]').forEach((link) => {
-    const parsed = new URL(link.getAttribute('href') || '', window.location.origin);
+  heroActionsEl.querySelectorAll('a[href*="/play"], a[href*="play.html?"], a[href*="/activity?"], a[href*="activity.html?"]').forEach((link) => {
+    const parsed = new URL(link.getAttribute('href') || '', window.location.href);
     const core = parsed.searchParams.get('core');
     if (!core) return;
     link.href = buildLaunchHref(core, {
@@ -139,7 +146,9 @@ function renderEmbeddedPlayerMode(params) {
   const mainEl = document.querySelector('main.activity-shell');
   if (!mainEl) return false;
 
-  const shellHref = `/activity?${new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {}).toString()}`.replace(/\?$/, '');
+  const shellParams = new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {});
+  shellParams.set('rev', ACTIVITY_REV);
+  const shellHref = `${isGitHubPagesHost() ? 'activity.html' : '/activity'}?${shellParams.toString()}`.replace(/\?$/, '');
   const playerHref = buildPlayerHref(core, {
     game: params.get('game') || '',
     launch: params.get('launch') === '1',
@@ -297,7 +306,7 @@ function renderLibrary(library) {
     if (meta.warning) badges.push({ label: 'Heads up', warning: true });
     const actions = meta.browserFirst
       ? [
-          { label: `Open ${meta.label} in browser`, href: `/play?core=${core}`, primary: true, external: true },
+          { label: `Open ${meta.label} in browser`, href: isGitHubPagesHost() ? `play.html?core=${core}` : `/play?core=${core}`, primary: true, external: true },
         ]
       : [
           { label: `Open ${meta.label} shelf`, href: buildLaunchHref(core, { embedded: true, activity: true }), primary: true },
@@ -359,7 +368,7 @@ function renderLibrary(library) {
       ],
       actions: [
         { label: 'Open in browser', href: buildPlayerHref(core, { game: entry.title, launch: true, embedded: false, activity: false }), primary: true, external: true },
-        { label: `Open ${meta.label} shelf`, href: `/play?core=${core}`, external: true },
+        { label: `Open ${meta.label} shelf`, href: isGitHubPagesHost() ? `play.html?core=${core}` : `/play?core=${core}`, external: true },
       ],
     }));
   });
@@ -367,7 +376,7 @@ function renderLibrary(library) {
 
 async function loadLibrary() {
   try {
-    const response = await fetch('/data/game-library.json', { cache: 'no-store' });
+    const response = await fetch(isGitHubPagesHost() ? 'data/game-library.json' : '/data/game-library.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`Library fetch failed: ${response.status}`);
     const library = await response.json();
     renderLibrary(library);

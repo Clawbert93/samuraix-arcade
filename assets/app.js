@@ -1,4 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
+const PLAYER_REV = 'restore5am4';
 
 const SYSTEMS = {
   gb: {
@@ -97,6 +98,10 @@ const config = SYSTEMS[core];
 const embeddedMode = params.get('embedded') === '1';
 const defaultEmulatorDataBase = embeddedMode ? '/emu/stable/data/' : 'https://cdn.emulatorjs.org/stable/data/';
 const ndsMobileEmulatorDataBase = embeddedMode ? defaultEmulatorDataBase : 'https://cdn.emulatorjs.org/4.0.9/data/';
+
+function isGitHubPagesHost() {
+  return window.location.hostname === 'clawbert93.github.io';
+}
 
 const titleEl = document.getElementById('systemTitle');
 const blurbEl = document.getElementById('systemBlurb');
@@ -572,6 +577,8 @@ function setEmbeddedFocusMode(enabled) {
   if (embeddedFocusButtonEl) {
     embeddedFocusButtonEl.textContent = enabled ? 'Exit focus mode' : 'Fill window';
   }
+  window.setTimeout(forceResponsiveGameLayout, 30);
+  window.setTimeout(forceResponsiveGameLayout, 180);
 }
 
 function syncFullscreenState() {
@@ -580,6 +587,40 @@ function syncFullscreenState() {
   if (fullscreenButtonEl && !embeddedMode) {
     fullscreenButtonEl.textContent = document.fullscreenElement === frameEl ? 'Exit fullscreen' : 'Fullscreen';
   }
+  window.setTimeout(forceResponsiveGameLayout, 30);
+  window.setTimeout(forceResponsiveGameLayout, 180);
+}
+
+function forceResponsiveGameLayout() {
+  if (!frameEl) return;
+  const expanded = document.fullscreenElement === frameEl || document.body.classList.contains('embedded-focus-mode');
+  const nodes = frameEl.querySelectorAll('#game, #game > div, #game canvas, #game iframe');
+  nodes.forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    if (expanded) {
+      node.style.maxWidth = '100%';
+      node.style.maxHeight = '100%';
+      if (node.id === 'game' || node.parentElement?.id === 'game') {
+        node.style.width = '100%';
+        node.style.height = '100%';
+      }
+      if (node.tagName === 'CANVAS' || node.tagName === 'IFRAME') {
+        node.style.width = '100%';
+        node.style.height = '100%';
+        node.style.objectFit = 'contain';
+        node.style.margin = '0 auto';
+      }
+    } else {
+      node.style.maxWidth = '';
+      node.style.maxHeight = '';
+      if (node.tagName === 'CANVAS' || node.tagName === 'IFRAME') {
+        node.style.width = '';
+        node.style.height = '';
+        node.style.objectFit = '';
+        node.style.margin = '';
+      }
+    }
+  });
 }
 
 function getRequestedRoomId() {
@@ -609,7 +650,7 @@ function syncRoomAwareNavLinks() {
     const href = link.getAttribute('href') || '';
     if (!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('#')) return;
 
-    const target = new URL(href, window.location.origin);
+    const target = new URL(href, window.location.href);
     if (target.pathname === '/play' || target.pathname.endsWith('/play.html')) {
       const targetCore = String(target.searchParams.get('core') || '').trim().toLowerCase();
       if (roomId) target.searchParams.set('room', roomId);
@@ -617,6 +658,7 @@ function syncRoomAwareNavLinks() {
       if (embeddedMode && targetCore !== 'psp') target.searchParams.set('embedded', '1');
       if (params.get('activity') === '1' && targetCore !== 'psp') target.searchParams.set('activity', '1');
       if (clientId && targetCore !== 'psp') target.searchParams.set('client_id', clientId);
+      if (!isGitHubPagesHost() && target.pathname.endsWith('/play.html')) target.pathname = '/play';
       link.href = `${target.pathname}${target.search}`;
       return;
     }
@@ -624,6 +666,7 @@ function syncRoomAwareNavLinks() {
     if (target.pathname === '/activity' || target.pathname.endsWith('/activity.html')) {
       if (clientId) target.searchParams.set('client_id', clientId);
       if (params.get('discord') === '1' || embeddedMode) target.searchParams.set('discord', '1');
+      if (!isGitHubPagesHost() && target.pathname.endsWith('/activity.html')) target.pathname = '/activity';
       link.href = `${target.pathname}${target.search}`;
       return;
     }
@@ -1177,7 +1220,7 @@ function populateDropdown() {
 
 async function loadLibrary() {
   try {
-    const response = await fetch('/data/game-library.json?v=1', { cache: 'no-store' });
+    const response = await fetch(isGitHubPagesHost() ? 'data/game-library.json?v=1' : '/data/game-library.json?v=1', { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     library = await response.json();
   } catch (error) {
@@ -1306,6 +1349,8 @@ buttonEl?.addEventListener('click', () => {
     window.setTimeout(focusGameTarget, 150);
     window.setTimeout(focusGameTarget, 900);
     window.setTimeout(focusGameTarget, 1800);
+    window.setTimeout(forceResponsiveGameLayout, 350);
+    window.setTimeout(forceResponsiveGameLayout, 1200);
     installNdsTouchBridge();
   });
   document.body.appendChild(script);
@@ -1375,6 +1420,7 @@ popoutButtonEl?.addEventListener('click', () => {
   target.searchParams.delete('activity');
   target.searchParams.delete('discord');
   target.searchParams.delete('client_id');
+  target.searchParams.set('rev', PLAYER_REV);
   window.open(target.toString(), '_blank', 'noopener,noreferrer');
 });
 

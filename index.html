@@ -5,7 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SamuraiX Arcade</title>
   <meta name="description" content="Free browser arcade for SamuraiX community members.">
-  <link rel="stylesheet" href="assets/styles.css">
+  <script>
+    (() => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const embedded = window.self !== window.top || params.get('discord') === '1';
+        if (!embedded) return;
+        const target = new URL('activity.html', window.location.href);
+        for (const [key, value] of params.entries()) target.searchParams.set(key, value);
+        target.searchParams.set('rev', 'restore5am4');
+        window.location.replace(target.toString());
+      } catch (error) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/styles.css?v=restore5am4">
 </head>
 <body>
   <main class="shell">
