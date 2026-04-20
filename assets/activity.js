@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am5';
+const ACTIVITY_REV = 'restore5am6';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -75,6 +75,12 @@ function isGitHubPagesHost() {
   return window.location.hostname === 'clawbert93.github.io';
 }
 
+function getCurrentActivityRoutePath() {
+  const pathname = String(window.location.pathname || '').trim();
+  if (/\/activity(?:\.html)?$/i.test(pathname)) return pathname;
+  return isGitHubPagesHost() ? 'activity.html' : '/activity';
+}
+
 function slugifyTitle(value) {
   return String(value || '')
     .toLowerCase()
@@ -111,7 +117,7 @@ function buildActivityRouteHref(core, options = {}) {
   const clientId = String(options.clientId || activityState.clientId || '').trim();
   if (clientId && core !== 'psp') params.set('client_id', clientId);
   params.set('rev', ACTIVITY_REV);
-  return `${isGitHubPagesHost() ? 'activity.html' : '/activity'}?${params.toString()}`;
+  return `${getCurrentActivityRoutePath()}?${params.toString()}`;
 }
 
 function buildLaunchHref(core, options = {}) {
@@ -149,7 +155,7 @@ function renderEmbeddedPlayerMode(params) {
 
   const shellParams = new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {});
   shellParams.set('rev', ACTIVITY_REV);
-  const shellHref = `${isGitHubPagesHost() ? 'activity.html' : '/activity'}?${shellParams.toString()}`.replace(/\?$/, '');
+  const shellHref = `${getCurrentActivityRoutePath()}?${shellParams.toString()}`.replace(/\?$/, '');
   const playerHref = buildPlayerHref(core, {
     game: params.get('game') || '',
     launch: params.get('launch') === '1',
