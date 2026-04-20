@@ -482,13 +482,34 @@ html.activity-player-open {
 .activity-embedded-lite .embedded-hubbar {
   display: none;
 }
+.activity-embedded-lite .player-hero,
+.activity-embedded-lite .controls-card,
+.activity-embedded-lite .grid.two-up {
+  display: none;
+}
 .activity-embedded-lite .shell.player-shell {
-  width: min(100vw, calc(100vw - 8px));
-  padding-top: 4px;
-  padding-bottom: 8px;
+  width: min(100vw, calc(100vw - 6px));
+  max-width: none;
+  padding-top: 2px;
+  padding-bottom: 4px;
 }
 .activity-embedded-lite .player-grid {
   margin-top: 0;
+  grid-template-columns: 1fr;
+}
+.activity-embedded-lite .player-grid > .card:last-child {
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.activity-embedded-lite .game-frame,
+.activity-embedded-lite #game {
+  min-height: calc(100dvh - 108px);
+  height: calc(100dvh - 108px);
+}
+.activity-embedded-lite .game-frame {
+  overflow: hidden;
 }
 .activity-iframe-mode .shell.player-shell {
   width: 100vw;
@@ -599,6 +620,11 @@ html.embedded-focus-mode {
   .activity-player-frame {
     min-height: calc(100dvh - 148px);
     height: calc(100dvh - 148px);
+  }
+  .activity-embedded-lite .game-frame,
+  .activity-embedded-lite #game {
+    min-height: calc(100dvh - 104px);
+    height: calc(100dvh - 104px);
   }
   .game-frame, #game { min-height: 520px; }
   .embedded-mode .player-grid { grid-template-columns: 1fr; }
