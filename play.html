@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SamuraiX Arcade Player</title>
   <meta name="description" content="Browser-based retro arcade player for the SamuraiX community.">
-  <link rel="stylesheet" href="assets/styles.css?v=restore5am5">
+  <link rel="stylesheet" href="assets/styles.css?v=restore5am8">
 </head>
 <body>
   <script>
@@ -13,14 +13,6 @@
     if (playerParams.get('embedded') === '1') {
       document.documentElement.classList.add('embedded-mode');
       document.body.classList.add('embedded-mode');
-    }
-    if (
-      playerParams.get('activity') === '1'
-      && window.self !== window.top
-      && ['1', 'true', 'yes'].includes(String(playerParams.get('launch') || playerParams.get('autostart') || '').trim().toLowerCase())
-    ) {
-      document.documentElement.classList.add('activity-iframe-mode');
-      document.body.classList.add('activity-iframe-mode');
     }
   </script>
   <main class="shell player-shell">
@@ -133,6 +125,6 @@
       </article>
     </section>
   </main>
-  <script src="assets/app.js?v=restore5am5"></script>
+  <script src="assets/app.js?v=restore5am8"></script>
 </body>
 </html>
