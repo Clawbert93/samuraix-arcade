@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const PLAYER_REV = 'restore5am14';
+const PLAYER_REV = 'restore5am15';
 
 const SYSTEMS = {
   gb: {
@@ -509,7 +509,7 @@ function applyPspPresetToStorage(gameUrl, gameName, preset) {
 
 function syncPspPresetUi() {
   const showPspPreset = core === 'psp';
-  const showEmbeddedFocus = embeddedMode && core !== 'psp' && !isActivityIframeHost();
+  const showEmbeddedFocus = embeddedMode && core !== 'psp';
 
   if (pspPresetWrapEl) pspPresetWrapEl.hidden = !showPspPreset;
   if (pspPresetNotesEl) {
