@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am6';
+const ACTIVITY_REV = 'restore5am7';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -11,6 +11,7 @@ const systemShelfGridEl = document.getElementById('systemShelfGrid');
 const activityBestBetsEl = document.getElementById('activityBestBets');
 const browserFirstLaneEl = document.getElementById('browserFirstLane');
 const multiplayerLabEl = document.getElementById('multiplayerLab');
+const activityShellEl = document.querySelector('main.activity-shell');
 
 const activityState = {
   insideDiscord: false,
@@ -20,6 +21,7 @@ const activityState = {
   participants: [],
 };
 let latestLibrary = null;
+let activityPlayerOverlayEl = null;
 
 const SYSTEM_META = {
   gb: { label: 'GB/GBC', tone: 'Very clean Activity fit', browserFirst: false },
@@ -127,6 +129,42 @@ function buildLaunchHref(core, options = {}) {
   return buildPlayerHref(core, options);
 }
 
+function updateActivityUrl(params) {
+  try {
+    const next = new URL(window.location.href);
+    ['core', 'game', 'launch', 'multiplayer', 'embedded', 'activity', 'room', 'rev'].forEach((key) => next.searchParams.delete(key));
+    for (const [key, value] of params.entries()) {
+      next.searchParams.set(key, value);
+    }
+    if (params.get('core')) {
+      next.searchParams.set('activity', '1');
+      next.searchParams.set('embedded', '1');
+      next.searchParams.set('rev', ACTIVITY_REV);
+    }
+    window.history.replaceState({}, '', `${next.pathname}${next.search}`);
+  } catch (error) {}
+}
+
+function closeEmbeddedPlayerMode({ updateHistory = true } = {}) {
+  if (activityPlayerOverlayEl) {
+    activityPlayerOverlayEl.remove();
+    activityPlayerOverlayEl = null;
+  }
+  activityShellEl?.classList.remove('activity-player-mode');
+  document.documentElement.classList.remove('activity-player-open');
+  document.body.classList.remove('activity-player-open');
+
+  if (updateHistory) {
+    try {
+      const next = new URL(window.location.href);
+      ['core', 'game', 'launch', 'multiplayer', 'embedded', 'activity', 'room', 'rev'].forEach((key) => next.searchParams.delete(key));
+      if (activityState.clientId) next.searchParams.set('client_id', activityState.clientId);
+      if (activityState.insideDiscord) next.searchParams.set('discord', '1');
+      window.history.replaceState({}, '', `${next.pathname}${next.search}`);
+    } catch (error) {}
+  }
+}
+
 function syncHeroActionLinks() {
   const heroActionsEl = document.getElementById('activityHeroActions');
   if (!heroActionsEl) return;
@@ -149,13 +187,12 @@ function renderEmbeddedPlayerMode(params) {
   const core = String(params.get('core') || '').trim();
   if (!core) return false;
 
-  const mainEl = document.querySelector('main.activity-shell');
-  if (!mainEl) return false;
-  mainEl.classList.add('activity-player-mode');
+  if (!activityShellEl) return false;
+  closeEmbeddedPlayerMode({ updateHistory: false });
+  activityShellEl.classList.add('activity-player-mode');
+  document.documentElement.classList.add('activity-player-open');
+  document.body.classList.add('activity-player-open');
 
-  const shellParams = new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {});
-  shellParams.set('rev', ACTIVITY_REV);
-  const shellHref = `${getCurrentActivityRoutePath()}?${shellParams.toString()}`.replace(/\?$/, '');
   const playerHref = buildPlayerHref(core, {
     game: params.get('game') || '',
     launch: params.get('launch') === '1',
@@ -166,10 +203,8 @@ function renderEmbeddedPlayerMode(params) {
     activity: true,
   });
 
-  mainEl.innerHTML = '';
-
   const card = document.createElement('section');
-  card.className = 'card activity-section activity-player-card';
+  card.className = 'card activity-section activity-player-card activity-player-overlay';
 
   const topRow = document.createElement('div');
   topRow.className = 'activity-section-head activity-player-head';
@@ -187,10 +222,13 @@ function renderEmbeddedPlayerMode(params) {
   titleWrap.appendChild(heading);
   titleWrap.appendChild(note);
 
-  const backLink = document.createElement('a');
+  const backLink = document.createElement('button');
   backLink.className = 'button';
-  backLink.href = shellHref || '/activity';
+  backLink.type = 'button';
   backLink.textContent = 'Back to hub';
+  backLink.addEventListener('click', () => {
+    closeEmbeddedPlayerMode({ updateHistory: true });
+  });
 
   topRow.appendChild(titleWrap);
   topRow.appendChild(backLink);
@@ -204,8 +242,35 @@ function renderEmbeddedPlayerMode(params) {
   frame.setAttribute('allowfullscreen', 'true');
   card.appendChild(frame);
 
-  mainEl.appendChild(card);
+  activityPlayerOverlayEl = card;
+  activityShellEl.appendChild(card);
+  updateActivityUrl(new URLSearchParams(playerHref.split('?')[1] || ''));
   return true;
+}
+
+function handleInPlaceActivityLaunch(event) {
+  const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+  if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+
+  const href = link.getAttribute('href') || '';
+  if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+  let target;
+  try {
+    target = new URL(href, window.location.href);
+  } catch (error) {
+    return;
+  }
+
+  if (target.origin !== window.location.origin) return;
+  if (!activityState.insideDiscord) return;
+  if (!/\/activity(?:\.html)?$/i.test(target.pathname) && target.pathname !== window.location.pathname) return;
+
+  const core = String(target.searchParams.get('core') || '').trim().toLowerCase();
+  if (!core || core === 'psp') return;
+
+  event.preventDefault();
+  renderEmbeddedPlayerMode(target.searchParams);
 }
 
 function createTile({ title, body, badges = [], actions = [] }) {
@@ -451,15 +516,16 @@ async function init() {
   setText(discordDetectedEl, insideDiscord ? 'Yes, embedded context detected.' : 'No, running as a standalone preview.');
   syncHeroActionLinks();
 
-  if (renderEmbeddedPlayerMode(params)) {
-    await connectDiscord(clientId, insideDiscord);
-    return;
-  }
+  document.addEventListener('click', handleInPlaceActivityLaunch, true);
 
   await Promise.allSettled([
     connectDiscord(clientId, insideDiscord),
     loadLibrary(),
   ]);
+
+  if (params.get('core') && insideDiscord) {
+    renderEmbeddedPlayerMode(params);
+  }
 }
 
 init();

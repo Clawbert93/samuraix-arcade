@@ -316,6 +316,12 @@ select option {
   gap: 0.5rem;
   padding: 12px;
 }
+.activity-player-overlay {
+  position: fixed;
+  inset: 6px;
+  z-index: 120;
+  margin: 0;
+}
 .activity-section-head {
   display: flex;
   align-items: end;
@@ -458,6 +464,10 @@ select option {
 }
 body.activity-iframe-mode,
 html.activity-iframe-mode {
+  overflow: hidden;
+}
+body.activity-player-open,
+html.activity-player-open {
   overflow: hidden;
 }
 .activity-iframe-mode .shell.player-shell {
