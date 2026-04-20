@@ -294,6 +294,12 @@ select option {
   width: min(1080px, calc(100vw - 24px));
   padding-top: 18px;
 }
+.activity-shell.activity-player-mode {
+  width: calc(100vw - 12px);
+  max-width: none;
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
 .activity-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -303,12 +309,38 @@ select option {
 .activity-section {
   margin-top: 18px;
 }
+.activity-player-card {
+  min-height: calc(100dvh - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 12px;
+}
 .activity-section-head {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 16px;
+}
+.activity-player-head {
+  align-items: center;
+  margin-bottom: 2px;
+}
+.activity-player-head h2 {
+  margin-bottom: 4px;
+}
+.activity-player-head .subtle {
+  margin: 0;
+  font-size: 0.88rem;
+}
+.activity-player-frame {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: calc(100dvh - 88px);
+  border: 0;
+  border-radius: 16px;
+  background: #050816;
 }
 .activity-launch-list,
 .activity-system-grid,
@@ -424,6 +456,40 @@ select option {
 .embedded-mode #game {
   min-height: calc(100vh - 120px);
 }
+body.activity-iframe-mode,
+html.activity-iframe-mode {
+  overflow: hidden;
+}
+.activity-iframe-mode .shell.player-shell {
+  width: 100vw;
+  max-width: none;
+  padding: 0;
+}
+.activity-iframe-mode .embedded-hubbar,
+.activity-iframe-mode .controls-card {
+  display: none;
+}
+.activity-iframe-mode .player-grid {
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+.activity-iframe-mode .player-grid > .card:last-child {
+  margin: 0;
+  padding: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.activity-iframe-mode .game-frame,
+.activity-iframe-mode #game {
+  min-height: calc(100dvh - 16px);
+  height: calc(100dvh - 16px);
+}
+.activity-iframe-mode .game-frame {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 body.embedded-focus-mode,
 html.embedded-focus-mode {
   overflow: hidden;
@@ -467,8 +533,10 @@ html.embedded-focus-mode {
 }
 .game-frame.is-fullscreen #game,
 .embedded-mode.embedded-focus-mode #game,
+.activity-iframe-mode #game,
 .game-frame.is-fullscreen #game > div,
-.embedded-mode.embedded-focus-mode #game > div {
+.embedded-mode.embedded-focus-mode #game > div,
+.activity-iframe-mode #game > div {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -482,6 +550,8 @@ html.embedded-focus-mode {
 }
 .embedded-mode.embedded-focus-mode #game canvas,
 .embedded-mode.embedded-focus-mode #game iframe,
+.activity-iframe-mode #game canvas,
+.activity-iframe-mode #game iframe,
 .game-frame.is-fullscreen #game canvas,
 .game-frame.is-fullscreen #game iframe {
   width: 100% !important;

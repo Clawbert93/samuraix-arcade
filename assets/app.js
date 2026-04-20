@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const PLAYER_REV = 'restore5am4';
+const PLAYER_REV = 'restore5am5';
 
 const SYSTEMS = {
   gb: {
@@ -101,6 +101,15 @@ const ndsMobileEmulatorDataBase = embeddedMode ? defaultEmulatorDataBase : 'http
 
 function isGitHubPagesHost() {
   return window.location.hostname === 'clawbert93.github.io';
+}
+
+function isActivityIframeHost() {
+  return embeddedMode && params.get('activity') === '1' && window.self !== window.top;
+}
+
+function setActivityIframeGameplayMode(enabled) {
+  document.documentElement.classList.toggle('activity-iframe-mode', enabled);
+  document.body.classList.toggle('activity-iframe-mode', enabled);
 }
 
 const titleEl = document.getElementById('systemTitle');
@@ -593,7 +602,7 @@ function syncFullscreenState() {
 
 function forceResponsiveGameLayout() {
   if (!frameEl) return;
-  const expanded = document.fullscreenElement === frameEl || document.body.classList.contains('embedded-focus-mode');
+  const expanded = document.fullscreenElement === frameEl || document.body.classList.contains('embedded-focus-mode') || document.body.classList.contains('activity-iframe-mode');
   const nodes = frameEl.querySelectorAll('#game, #game > div, #game canvas, #game iframe');
   nodes.forEach((node) => {
     if (!(node instanceof HTMLElement)) return;
@@ -1264,6 +1273,7 @@ buttonEl?.addEventListener('click', () => {
   }
 
   launched = true;
+  if (isActivityIframeHost()) setActivityIframeGameplayMode(true);
   buttonEl.disabled = true;
   if (inputEl) inputEl.disabled = true;
   if (dropdownEl) dropdownEl.disabled = true;

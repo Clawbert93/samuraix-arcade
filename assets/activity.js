@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am4';
+const ACTIVITY_REV = 'restore5am5';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -145,6 +145,7 @@ function renderEmbeddedPlayerMode(params) {
 
   const mainEl = document.querySelector('main.activity-shell');
   if (!mainEl) return false;
+  mainEl.classList.add('activity-player-mode');
 
   const shellParams = new URLSearchParams(activityState.clientId ? { client_id: activityState.clientId } : {});
   shellParams.set('rev', ACTIVITY_REV);
@@ -162,14 +163,10 @@ function renderEmbeddedPlayerMode(params) {
   mainEl.innerHTML = '';
 
   const card = document.createElement('section');
-  card.className = 'card activity-section';
-  card.style.minHeight = 'calc(100vh - 2rem)';
-  card.style.display = 'flex';
-  card.style.flexDirection = 'column';
-  card.style.gap = '0.75rem';
+  card.className = 'card activity-section activity-player-card';
 
   const topRow = document.createElement('div');
-  topRow.className = 'activity-section-head';
+  topRow.className = 'activity-section-head activity-player-head';
 
   const titleWrap = document.createElement('div');
   const eyebrow = document.createElement('p');
@@ -196,14 +193,9 @@ function renderEmbeddedPlayerMode(params) {
   const frame = document.createElement('iframe');
   frame.src = playerHref;
   frame.title = `${String(core).toUpperCase()} embedded player`;
+  frame.className = 'activity-player-frame';
   frame.setAttribute('allow', 'autoplay; clipboard-read; clipboard-write; fullscreen; gamepad');
   frame.setAttribute('allowfullscreen', 'true');
-  frame.style.width = '100%';
-  frame.style.flex = '1 1 auto';
-  frame.style.minHeight = '80vh';
-  frame.style.border = '0';
-  frame.style.borderRadius = '16px';
-  frame.style.background = '#050816';
   card.appendChild(frame);
 
   mainEl.appendChild(card);
