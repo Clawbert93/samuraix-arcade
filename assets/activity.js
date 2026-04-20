@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am12';
+const ACTIVITY_REV = 'restore5am13';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -77,13 +77,6 @@ function isGitHubPagesHost() {
   return window.location.hostname === 'clawbert93.github.io';
 }
 
-function isLikelyTouchDevice() {
-  try {
-    if (window.matchMedia?.('(pointer: coarse)').matches) return true;
-  } catch (error) {}
-  return Number(navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window;
-}
-
 function getCurrentActivityRoutePath() {
   const pathname = String(window.location.pathname || '').trim();
   if (/\/activity(?:\.html)?$/i.test(pathname)) return pathname;
@@ -135,20 +128,6 @@ function buildLaunchHref(core, options = {}) {
     return buildActivityRouteHref(core, options);
   }
   return buildPlayerHref(core, options);
-}
-
-function buildBrowserEscapeHrefFromActivityParams(params) {
-  const core = String(params.get('core') || '').trim().toLowerCase();
-  if (!core) return '';
-  return buildPlayerHref(core, {
-    game: params.get('game') || '',
-    launch: params.get('launch') === '1',
-    multiplayer: params.get('multiplayer') === '1',
-    room: params.get('room') || activityState.instanceId || '',
-    embedded: false,
-    activity: false,
-    activityIframe: false,
-  });
 }
 
 function updateActivityUrl(params) {
@@ -312,19 +291,6 @@ function handleInPlaceActivityLaunch(event) {
   if (!core || core === 'psp') return;
 
   event.preventDefault();
-
-  if (isLikelyTouchDevice()) {
-    const browserHref = buildBrowserEscapeHrefFromActivityParams(target.searchParams);
-    if (browserHref) {
-      setText(statusEl, 'Discord mobile is still mangling embedded touch controls here, so I am opening the real browser player instead.');
-      try {
-        window.open(new URL(browserHref, window.location.href).toString(), '_blank', 'noopener,noreferrer');
-      } catch (error) {
-        window.location.href = browserHref;
-      }
-      return;
-    }
-  }
 
   renderEmbeddedPlayerMode(target.searchParams);
 }

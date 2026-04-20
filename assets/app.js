@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const PLAYER_REV = 'restore5am11';
+const PLAYER_REV = 'restore5am13';
 
 const SYSTEMS = {
   gb: {
@@ -1282,7 +1282,6 @@ buttonEl?.addEventListener('click', () => {
   }
 
   launched = true;
-  if (isActivityIframeHost()) setActivityIframeGameplayMode(true);
   buttonEl.disabled = true;
   if (inputEl) inputEl.disabled = true;
   if (dropdownEl) dropdownEl.disabled = true;
