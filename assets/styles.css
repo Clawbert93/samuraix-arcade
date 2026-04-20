@@ -340,10 +340,16 @@ select option {
   margin: 0;
   font-size: 0.88rem;
 }
+.activity-player-head-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .activity-player-frame {
   width: 100%;
   flex: 1 1 auto;
-  min-height: clamp(520px, 72dvh, 900px);
+  min-height: clamp(520px, calc(100dvh - 140px), 900px);
+  height: calc(100dvh - 140px);
   border: 0;
   border-radius: 16px;
   background: #050816;
@@ -471,7 +477,18 @@ html.activity-iframe-mode {
 }
 body.activity-player-open,
 html.activity-player-open {
-  overflow: auto;
+  overflow: hidden;
+}
+.activity-embedded-lite .embedded-hubbar {
+  display: none;
+}
+.activity-embedded-lite .shell.player-shell {
+  width: min(100vw, calc(100vw - 8px));
+  padding-top: 4px;
+  padding-bottom: 8px;
+}
+.activity-embedded-lite .player-grid {
+  margin-top: 0;
 }
 .activity-iframe-mode .shell.player-shell {
   width: 100vw;
@@ -577,6 +594,12 @@ html.embedded-focus-mode {
 @media (max-width: 860px) {
   .two-up, .player-grid, .activity-grid, .activity-system-grid, .activity-game-grid { grid-template-columns: 1fr; }
   .activity-section-head { align-items: start; flex-direction: column; }
+  .activity-player-head-actions { width: 100%; }
+  .activity-player-head-actions .button { flex: 1 1 auto; }
+  .activity-player-frame {
+    min-height: calc(100dvh - 148px);
+    height: calc(100dvh - 148px);
+  }
   .game-frame, #game { min-height: 520px; }
   .embedded-mode .player-grid { grid-template-columns: 1fr; }
 }

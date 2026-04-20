@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const PLAYER_REV = 'restore5am9';
+const PLAYER_REV = 'restore5am11';
 
 const SYSTEMS = {
   gb: {
@@ -666,11 +666,13 @@ function syncRoomAwareNavLinks() {
       if (multiplayerRequested) target.searchParams.set('multiplayer', '1');
       if (embeddedMode && targetCore !== 'psp') target.searchParams.set('embedded', '1');
       if (params.get('activity') === '1' && targetCore !== 'psp') target.searchParams.set('activity', '1');
+      if (params.get('activity_iframe') === '1' && targetCore !== 'psp') target.searchParams.set('activity_iframe', '1');
       if (clientId && targetCore !== 'psp') target.searchParams.set('client_id', clientId);
       if (!isGitHubPagesHost() && target.pathname.endsWith('/play.html')) target.pathname = '/play';
       if (embeddedMode && targetCore === 'psp') {
         target.searchParams.delete('embedded');
         target.searchParams.delete('activity');
+        target.searchParams.delete('activity_iframe');
         target.searchParams.delete('client_id');
         link.target = '_blank';
         link.rel = 'noreferrer';

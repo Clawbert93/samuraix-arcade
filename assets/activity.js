@@ -1,5 +1,5 @@
 const DEFAULT_DISCORD_CLIENT_ID = '1494677350439452733';
-const ACTIVITY_REV = 'restore5am10';
+const ACTIVITY_REV = 'restore5am11';
 const statusEl = document.getElementById('activityStatus');
 const discordDetectedEl = document.getElementById('discordDetected');
 const discordAuthStateEl = document.getElementById('discordAuthState');
@@ -98,6 +98,7 @@ function buildPlayerHref(core, options = {}) {
   if (options.multiplayer) params.set('multiplayer', '1');
   if (options.embedded !== false && core !== 'psp') params.set('embedded', '1');
   if (options.activity !== false && core !== 'psp') params.set('activity', '1');
+  if (options.activityIframe && core !== 'psp') params.set('activity_iframe', '1');
   const roomId = String(options.room || activityState.instanceId || '').trim();
   if (roomId) params.set('room', roomId);
   const clientId = String(options.clientId || activityState.clientId || '').trim();
@@ -201,6 +202,7 @@ function renderEmbeddedPlayerMode(params) {
     clientId: params.get('client_id') || activityState.clientId || '',
     embedded: true,
     activity: true,
+    activityIframe: true,
   });
 
   const card = document.createElement('section');
@@ -222,6 +224,9 @@ function renderEmbeddedPlayerMode(params) {
   titleWrap.appendChild(heading);
   titleWrap.appendChild(note);
 
+  const actions = document.createElement('div');
+  actions.className = 'activity-player-head-actions';
+
   const backLink = document.createElement('button');
   backLink.className = 'button';
   backLink.type = 'button';
@@ -230,8 +235,24 @@ function renderEmbeddedPlayerMode(params) {
     closeEmbeddedPlayerMode({ updateHistory: true });
   });
 
+  const browserUrl = new URL(playerHref, window.location.href);
+  browserUrl.searchParams.delete('embedded');
+  browserUrl.searchParams.delete('activity');
+  browserUrl.searchParams.delete('activity_iframe');
+  browserUrl.searchParams.delete('client_id');
+
+  const browserLink = document.createElement('a');
+  browserLink.className = 'button';
+  browserLink.href = browserUrl.toString();
+  browserLink.target = '_blank';
+  browserLink.rel = 'noreferrer';
+  browserLink.textContent = 'Open in browser';
+
+  actions.appendChild(backLink);
+  actions.appendChild(browserLink);
+
   topRow.appendChild(titleWrap);
-  topRow.appendChild(backLink);
+  topRow.appendChild(actions);
   card.appendChild(topRow);
 
   const frame = document.createElement('iframe');
